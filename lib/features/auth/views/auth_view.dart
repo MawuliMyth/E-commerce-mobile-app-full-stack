@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class authView extends StatelessWidget {
-    const authView({Key? key}) : super(key: key);
+    const authView({super.key});
 
   @override
   Widget build(BuildContext context) {
