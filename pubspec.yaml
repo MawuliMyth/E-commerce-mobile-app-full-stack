@@ -28,3 +28,10 @@ flutter:
     - family: Ytrewq
       fonts:
         - asset: assets/fonts/ytrewq.ttf
+    - family: Dartguy
+      fonts:
+        - asset: assets/fonts/dartguy.ttf
+    - family: Mawi
+      fonts:
+        - asset: assets/fonts/ojuju.ttf
+
