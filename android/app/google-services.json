@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "705642429153",
+    "project_id": "shoppe-app-37c8b",
+    "storage_bucket": "shoppe-app-37c8b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:705642429153:android:7c2ee0e353ca3c66f295a0",
+        "android_client_info": {
+          "package_name": "com.example.ecommerce_firebase"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "705642429153-grn2j4liohsk0iuvp7bub79m5fq1ld2d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCJUNYepFTIrOfkLWIqkesLQrzEdo_71-k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "705642429153-grn2j4liohsk0iuvp7bub79m5fq1ld2d.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
