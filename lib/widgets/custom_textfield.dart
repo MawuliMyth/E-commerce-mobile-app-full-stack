@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 
+class CustomTextfield extends StatelessWidget {
+  final String hintText;
+  final bool obscureText;
 
-   class CustomTextfield extends StatelessWidget {
-     final String hintText;
-     final bool obscureText;
+  const CustomTextfield({
+    super.key,
+    required this.hintText,
+    required this.obscureText,
+  });
 
-
-     const CustomTextfield({super.key});
-
-     @override
-     Widget build(BuildContext context) {
-       return TextField();
-     }
-   }
+  @override
+  Widget build(BuildContext context) {
+    return TextField();
+  }
+}
