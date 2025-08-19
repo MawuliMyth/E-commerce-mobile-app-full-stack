@@ -5,16 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 
-class RegisterController {
+class GoogleAuthController {
   final FirebaseAuth _auth;
   final GoogleSignIn _googleSignIn;
 
-  RegisterController({FirebaseAuth? auth, GoogleSignIn? googleSignIn})
+  GoogleAuthController({FirebaseAuth? auth, GoogleSignIn? googleSignIn})
     : _auth = auth ?? FirebaseAuth.instance,
       _googleSignIn = googleSignIn ?? GoogleSignIn();
 
-  // Handle Google Sign In for registration
-  Future<Map<String, dynamic>> handleGoogleSignIn({
+  // Shared method for Google Auth (works for both login & register)
+  Future<Map<String, dynamic>> signInWithGoogle({
     required BuildContext context,
     required Function(bool) setLoading,
     VoidCallback? onSuccess,
@@ -22,45 +22,40 @@ class RegisterController {
     setLoading(true);
 
     try {
-      // Trigger the authentication flow
+      // Step 1: Google sign-in
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-
       if (googleUser == null) {
-        // User cancelled the sign-in
         setLoading(false);
         return {'success': false, 'message': 'Sign-in cancelled by user'};
       }
 
-      // Obtain the auth details from the request
+      // Step 2: Get Google Auth details
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
-      // Create a new credential
+      // Step 3: Firebase credential
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      // Sign in to Firebase with the Google credential
+      // Step 4: Sign in with Firebase
       final UserCredential userCredential = await _auth.signInWithCredential(
         credential,
       );
-
       final User? user = userCredential.user;
 
       if (user != null) {
-        // Successfully signed in/registered
         final String? idToken = await user.getIdToken();
 
-        // Send to your backend (replace with your logic)
+        // Step 5: Send to backend (dynamic endpoint: login OR register)
         final response = await _sendToBackend(idToken!, user);
 
-        print('Successfully signed in: ${user.email}');
         onSuccess?.call();
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Successfully registered with Google!'),
+            content: Text('Successfully signed in with Google!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -68,32 +63,31 @@ class RegisterController {
         return {'success': true, 'data': response};
       }
 
-      // If user is somehow null
       return {'success': false, 'message': 'User is null after sign-in'};
     } catch (e) {
-      // Handle error
       print('Google sign-in error: $e');
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Google registration failed: ${e.toString()}'),
+          content: Text('Google sign-in failed: $e'),
           backgroundColor: Colors.red,
         ),
       );
-
       return {'success': false, 'message': e.toString()};
     } finally {
       setLoading(false);
     }
   }
 
+  // 🔑 Shared backend call for login/register
   Future<Map<String, dynamic>> _sendToBackend(
     String idToken,
     User firebaseUser,
   ) async {
     try {
       final response = await http.post(
-        Uri.parse('https://online-store-api-ashy.vercel.app/users/google-auth'),
+        Uri.parse(
+          'https://online-store-api-ashy.vercel.app/api/users/google-auth',
+        ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'idToken': idToken,
