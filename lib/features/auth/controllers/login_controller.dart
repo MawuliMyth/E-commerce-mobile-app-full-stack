@@ -1,18 +1,22 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+import '../models/login_model.dart';
 
 class LoginController {
   final FirebaseAuth _auth;
   final GoogleSignIn _googleSignIn;
+  final String _loginApiUrl = 'https://online-store-api-ashy.vercel.app/api/users/login';
 
   LoginController({FirebaseAuth? auth, GoogleSignIn? googleSignIn})
-    : _auth = auth ?? FirebaseAuth.instance,
-      _googleSignIn = googleSignIn ?? GoogleSignIn();
+      : _auth = auth ?? FirebaseAuth.instance,
+        _googleSignIn = googleSignIn ?? GoogleSignIn();
 
-  // Handle email/password login
   Future<void> handleEmailPasswordLogin({
-    required String email,
+    required String phone,
     required String password,
     required BuildContext context,
     required Function(bool) setLoading,
@@ -21,15 +25,19 @@ class LoginController {
     setLoading(true);
 
     try {
-      // Sign in with email and password
-      final UserCredential userCredential = await _auth
-          .signInWithEmailAndPassword(
-            email: email.trim(),
-            password: password.trim(),
-          );
+      final loginModel = LoginModel(
+        phone: phone.trim(),
+        password: password.trim(),
+      );
 
-      if (userCredential.user != null) {
-        // Successfully signed in
+      final response = await http.post(
+        Uri.parse(_loginApiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(loginModel.toJson()),
+      );
+
+      if (response.statusCode == 200) {
+        jsonDecode(response.body);
         onSuccess?.call();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -37,9 +45,11 @@ class LoginController {
             backgroundColor: Colors.green,
           ),
         );
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['message'] ?? 'Login failed');
       }
     } catch (e) {
-      // Handle error
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Login failed: ${e.toString()}'),
@@ -51,42 +61,25 @@ class LoginController {
     }
   }
 
-  // Handle Google Sign In
   Future<void> handleGoogleSignIn({
     required BuildContext context,
     required Function(bool) setLoading,
     VoidCallback? onSuccess,
   }) async {
     setLoading(true);
-
     try {
-      // Trigger the authentication flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-
       if (googleUser == null) {
-        // User cancelled the sign-in
         setLoading(false);
         return;
       }
-
-      // Obtain the auth details from the request
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-
-      // Create a new credential
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-
-      // Sign in to Firebase with the Google credential
-      final UserCredential userCredential = await _auth.signInWithCredential(
-        credential,
-      );
-
+      final UserCredential userCredential = await _auth.signInWithCredential(credential);
       if (userCredential.user != null) {
-        // Successfully signed in
-        print('Successfully signed in: ${userCredential.user!.email}');
         onSuccess?.call();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -96,8 +89,6 @@ class LoginController {
         );
       }
     } catch (e) {
-      // Handle error
-      print('Google sign-in error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Google sign-in failed: ${e.toString()}'),

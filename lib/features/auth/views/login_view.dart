@@ -1,5 +1,6 @@
+import 'package:ecommerce_firebase/Presentation/home_bot_nav.dart';
+import 'package:ecommerce_firebase/Presentation/home_screen.dart';
 import 'package:flutter/material.dart';
-
 import '../controllers/forgot_password_controller.dart';
 import '../controllers/login_controller.dart';
 
@@ -18,9 +19,8 @@ class _LoginViewState extends State<LoginView> {
   final LoginController _loginController = LoginController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
-  String _selectedCountryCode = '+233'; // Default to Ghana
+  String _selectedCountryCode = '+233';
 
-  // List of countries with their codes and flags
   final List<Map<String, String>> _countries = [
     {'name': 'Ghana', 'code': '+233', 'flag': '🇬🇭'},
     {'name': 'Nigeria', 'code': '+234', 'flag': '🇳🇬'},
@@ -36,7 +36,7 @@ class _LoginViewState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromRGBO(255, 255, 255, 1),
+      backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,10 +83,7 @@ class _LoginViewState extends State<LoginView> {
                 ],
               ),
             ),
-
             SizedBox(height: 20),
-
-            // Continue with Google button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: SizedBox(
@@ -112,7 +109,6 @@ class _LoginViewState extends State<LoginView> {
                 ),
               ),
             ),
-            // Divider with "or" text
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(
@@ -133,18 +129,14 @@ class _LoginViewState extends State<LoginView> {
                 ],
               ),
             ),
-
-            // Form fields
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 20),
-                  // Phone number field with country code dropdown
                   Row(
                     children: [
-                      // Country Flag Dropdown
                       Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: 9,
@@ -156,7 +148,7 @@ class _LoginViewState extends State<LoginView> {
                         ),
                         child: DropdownButton<String>(
                           value: _selectedCountryCode,
-                          underline: SizedBox(), // Remove default underline
+                          underline: SizedBox(),
                           icon: Icon(
                             Icons.keyboard_arrow_down,
                             color: Colors.grey[600],
@@ -180,12 +172,8 @@ class _LoginViewState extends State<LoginView> {
                         ),
                       ),
                       SizedBox(width: 12),
-
-                      // Vertical Divider
                       Container(width: 1, height: 40, color: Colors.grey[300]),
                       SizedBox(width: 12),
-
-                      // Phone Number Input with Country Code Prefix
                       Flexible(
                         child: TextField(
                           controller: _phoneNumberController,
@@ -223,10 +211,7 @@ class _LoginViewState extends State<LoginView> {
                       ),
                     ],
                   ),
-
                   SizedBox(height: 20),
-
-                  // Password field
                   TextField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
@@ -259,9 +244,7 @@ class _LoginViewState extends State<LoginView> {
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off
-                              : Icons.visibility,
+                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
                           color: Colors.grey[400],
                         ),
                         onPressed: () {
@@ -278,15 +261,42 @@ class _LoginViewState extends State<LoginView> {
                     },
                     child: Text('Forgot Password?'),
                   ),
-
                   SizedBox(height: 20),
-
-                  // Done button
                   Container(
                     width: double.infinity,
                     margin: EdgeInsets.only(bottom: 16),
                     child: ElevatedButton(
-                      onPressed: () {}, // empty function, button stays enabled
+                      onPressed: _isLoading
+                          ? null
+                          : () async {
+                        if (_phoneNumberController.text.isEmpty || _passwordController.text.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Please fill in all fields'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                          return;
+                        }
+                        if (_passwordController.text.length < 6) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Password must be at least 6 characters'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                          return;
+                        }
+                        await _loginController.handleEmailPasswordLogin(
+                          phone: _selectedCountryCode + _phoneNumberController.text,
+                          password: _passwordController.text,
+                          context: context,
+                          setLoading: (isLoading) => setState(() => _isLoading = isLoading),
+                          onSuccess: () {
+                             Navigator.pushReplacementNamed(context, HomeBotnav.id);
+                          },
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xff004CFF),
                         padding: const EdgeInsets.symmetric(vertical: 18),
@@ -305,8 +315,6 @@ class _LoginViewState extends State<LoginView> {
                       ),
                     ),
                   ),
-
-                  // Cancel button
                 ],
               ),
             ),
@@ -321,7 +329,6 @@ class _LoginViewState extends State<LoginView> {
                 ),
               ),
             ),
-
             SizedBox(height: 20),
           ],
         ),
@@ -329,14 +336,12 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 
-  // Handle Google Sign In
   Future<void> _handleGoogleSignIn() async {
     await _loginController.handleGoogleSignIn(
       context: context,
       setLoading: (isLoading) => setState(() => _isLoading = isLoading),
       onSuccess: () {
-        // Navigate to home screen or handle success
-        // Navigator.pushReplacementNamed(context, '/home');
+         Navigator.pushReplacementNamed(context,  HomeBotnav.id);
       },
     );
   }
