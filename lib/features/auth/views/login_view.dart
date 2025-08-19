@@ -36,11 +36,14 @@ class _LoginViewState extends State<LoginView> {
     return Scaffold(
       backgroundColor: Color.fromRGBO(255, 255, 255, 1),
       body: SingleChildScrollView(
+
         child: Column(
+
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Stack(
               children: [
+
                 Image.asset('assets/images/b2.png', height: 250),
                 Positioned(
                   child: Image.asset('assets/images/b1.png', height: 200),
@@ -263,7 +266,7 @@ class _LoginViewState extends State<LoginView> {
                       ),
                     ),
                   ),
-                  TextButton(onPressed: (){}, child: Text('Forgot Password?')),
+                  TextButton(onPressed: (){}, child: Text('Forgot Password?', style: TextStyle(color: Color(0xff004CFF)),)),
         
                   SizedBox(height: 20),
         
@@ -309,7 +312,14 @@ class _LoginViewState extends State<LoginView> {
               ),
             ),
 
-            SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Stack(children: [Positioned(
+
+                    child: Image.asset('assets/images/b4.png', height: 200,))],),
+              ],
+            )
           ],
         ),
       ),
