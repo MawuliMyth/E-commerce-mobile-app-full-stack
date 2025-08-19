@@ -2,6 +2,7 @@ import 'package:ecommerce_firebase/Presentation/welcome_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
+import 'features/auth/controllers/forgot_password_controller.dart';
 import 'features/auth/views/login_view.dart';
 import 'features/auth/views/register_view.dart';
 
@@ -27,6 +28,7 @@ class MyApp extends StatelessWidget {
         WelcomeScreen.id: (context) => const WelcomeScreen(),
         LoginView.id: (context) => const LoginView(),
         RegisterView.id: (context) => const RegisterView(),
+        ForgotPasswordView.id: (context) => const ForgotPasswordView(),
       },
     );
   }
