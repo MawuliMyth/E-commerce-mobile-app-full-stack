@@ -1,8 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../../Presentation/home_screen.dart';
 import '../controllers/forgot_password_controller.dart';
-import '../controllers/google_signin_controller.dart';
+import '../controllers/login_controller.dart';
 
 class LoginView extends StatefulWidget {
   static String id = 'login_view';
@@ -16,7 +16,7 @@ class LoginView extends StatefulWidget {
 class _LoginViewState extends State<LoginView> {
   bool _isLoading = false;
   bool _obscurePassword = true;
-  final GoogleAuthController _loginController = GoogleAuthController();
+  final LoginController _loginController = LoginController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
   String _selectedCountryCode = '+233'; // Default to Ghana
@@ -332,27 +332,13 @@ class _LoginViewState extends State<LoginView> {
 
   // Handle Google Sign In
   Future<void> _handleGoogleSignIn() async {
-    final result = await _loginController.signInWithGoogle(
+    await _loginController.signInWithGoogle(
       context: context,
       setLoading: (isLoading) => setState(() => _isLoading = isLoading),
       onSuccess: () {
         // Navigate to home screen or handle success
-        Navigator.pushNamed(context, ForgotPasswordView.id);
+        Navigator.pushNamed(context, HomeScreen.id);
       },
     );
-
-    if (result['success'] == true) {
-      if (kDebugMode) {
-        print("Google sign-in successful: ${result['data']}");
-      }
-    } else {
-      // ❌ Not successful, show an error message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message'] ?? 'Google sign-in failed'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
   }
 }

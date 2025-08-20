@@ -5,15 +5,65 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 
-class GoogleAuthController {
+class RegisterController {
   final FirebaseAuth _auth;
   final GoogleSignIn _googleSignIn;
 
-  GoogleAuthController({FirebaseAuth? auth, GoogleSignIn? googleSignIn})
+  RegisterController({FirebaseAuth? auth, GoogleSignIn? googleSignIn})
     : _auth = auth ?? FirebaseAuth.instance,
       _googleSignIn = googleSignIn ?? GoogleSignIn();
 
-  // Shared method for Google Auth (works for both login & register)
+  // Handle email/password registration
+  Future<void> handleEmailPasswordRegistration({
+    required String email,
+    required String password,
+    required String fullName,
+    required String phoneNumber,
+    required BuildContext context,
+    required Function(bool) setLoading,
+    VoidCallback? onSuccess,
+  }) async {
+    setLoading(true);
+
+    try {
+      // Create user with email and password
+      final UserCredential userCredential = await _auth
+          .createUserWithEmailAndPassword(
+            email: email.trim(),
+            password: password.trim(),
+          );
+
+      if (userCredential.user != null) {
+        // Update user profile with full name
+        await userCredential.user!.updateDisplayName(fullName.trim());
+
+        // Optionally, store phone number in Firebase (e.g., Firestore) or other storage
+        // For now, we'll just print it (replace with actual storage logic if needed)
+        print('Phone number: $phoneNumber');
+
+        // Successfully registered
+        onSuccess?.call();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Successfully registered!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      // Handle error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Registration failed: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Handle Google Sign In for registration
   Future<Map<String, dynamic>> signInWithGoogle({
     required BuildContext context,
     required Function(bool) setLoading,
