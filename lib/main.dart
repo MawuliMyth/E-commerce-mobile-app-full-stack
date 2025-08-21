@@ -7,6 +7,7 @@ import 'package:ecommerce_firebase/features/filter/views/filter_view.dart';
 import 'package:ecommerce_firebase/features/wishlist/views/wishlist_view.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+
 import 'features/auth/controllers/forgot_password_controller.dart';
 import 'features/auth/views/login_view.dart';
 import 'features/auth/views/register_view.dart';
@@ -39,7 +40,6 @@ class MyApp extends StatelessWidget {
         DashboardView.id: (context) => const DashboardView(),
         WishlistView.id: (context) => const WishlistView(),
         HomeBotnav.id: (context) => const HomeBotnav(),
-
       },
     );
   }
