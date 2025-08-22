@@ -5,10 +5,12 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import '../models/auth_model.dart';
+import 'auth_controller.dart';
 
 class RegisterController {
   final FirebaseAuth _auth;
   final GoogleSignIn _googleSignIn;
+  final AuthController _authController = AuthController();
   final String _registerApiUrl = 'https://online-store-api-ashy.vercel.app/api/users/register';
 
   RegisterController({FirebaseAuth? auth, GoogleSignIn? googleSignIn})
@@ -41,7 +43,10 @@ class RegisterController {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        jsonDecode(response.body);
+        final data = jsonDecode(response.body);
+        final accessToken = data['tokens']['accessToken'];
+        final refreshToken = data['tokens']['refreshToken'];
+        await _authController.storeTokens(accessToken, refreshToken);
         onSuccess?.call();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -84,6 +89,7 @@ class RegisterController {
       );
       final UserCredential userCredential = await _auth.signInWithCredential(credential);
       if (userCredential.user != null) {
+
         onSuccess?.call();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

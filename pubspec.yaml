@@ -12,7 +12,8 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
   http: ^1.5.0
-  
+  flutter_secure_storage: ^9.2.4
+
   # Firebase packages
   firebase_core: ^4.0.0
   firebase_auth: ^6.0.1
@@ -20,17 +21,17 @@ dependencies:
   firebase_storage: ^13.0.0
   firebase_messaging: ^16.0.0
   firebase_analytics: ^12.0.0
-  
+
   # Authentication
   google_sign_in: ^6.1.6
-  
+
   # State management
   provider: ^6.1.1
-  
+
   # UI components
   cached_network_image: ^3.3.0
   image_picker: ^1.0.4
-  
+
   # Utilities
   uuid: ^4.2.1
   intl: ^0.19.0
@@ -39,7 +40,11 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
-
+  flutter_launcher_icons: ^0.14.4
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png"
 flutter:
   uses-material-design: true
   assets:
@@ -58,3 +63,8 @@ flutter:
       fonts:
         - asset: assets/fonts/ojuju.ttf
 
+# Flutter launcher icons config
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png"

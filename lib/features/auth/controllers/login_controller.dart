@@ -5,10 +5,12 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import '../models/login_model.dart';
+import 'auth_controller.dart';
 
 class LoginController {
   final FirebaseAuth _auth;
   final GoogleSignIn _googleSignIn;
+  final AuthController _authController = AuthController();
   final String _loginApiUrl = 'https://online-store-api-ashy.vercel.app/api/users/login';
 
   LoginController({FirebaseAuth? auth, GoogleSignIn? googleSignIn})
@@ -37,7 +39,10 @@ class LoginController {
       );
 
       if (response.statusCode == 200) {
-        jsonDecode(response.body);
+        final data = jsonDecode(response.body);
+        final accessToken = data['tokens']['accessToken'];
+        final refreshToken = data['tokens']['refreshToken'];
+        await _authController.storeTokens(accessToken, refreshToken);
         onSuccess?.call();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -80,6 +85,7 @@ class LoginController {
       );
       final UserCredential userCredential = await _auth.signInWithCredential(credential);
       if (userCredential.user != null) {
+
         onSuccess?.call();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
