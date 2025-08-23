@@ -1,5 +1,4 @@
 import 'package:ecommerce_firebase/Presentation/home_bot_nav.dart';
-import 'package:ecommerce_firebase/Presentation/home_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../controllers/signup_controller.dart';
