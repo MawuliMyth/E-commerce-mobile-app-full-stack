@@ -1,6 +1,7 @@
+import 'package:ecommerce_firebase/features/dashboard/widgets/poster_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:ecommerce_firebase/features/auth/provider/auth_provider.dart';
+
+import 'package:ecommerce_firebase/widgets/searchbar_field.dart';
 
 class DashboardView extends StatefulWidget {
   static const String id = 'dashboard_view';
@@ -14,28 +15,35 @@ class DashboardView extends StatefulWidget {
 class _DashboardViewState extends State<DashboardView> {
   @override
   Widget build(BuildContext context) {
-    return Consumer<AuthProvider>(
-      builder: (context, authProvider, child) {
-        final user = authProvider.user;
-        return Scaffold(
-          backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
+    final screenWidth = MediaQuery.of(context).size.width;
 
-          body: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
+    return Scaffold(
+      backgroundColor: Color.fromRGBO(255, 255, 255, 1),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+          child: Column(
             children: [
-              Text(
-                user != null && user.fullname.isNotEmpty
-                    ? 'Hello, ${user.fullname}!'
-                    : 'Hello Guest!',
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    'Shop',
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.1,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(width: screenWidth * 0.6, child: SearchbarField()),
+                ],
               ),
+              SizedBox(height: 20),
+              PosterCarousel(),
             ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

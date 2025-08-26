@@ -30,8 +30,8 @@ dependencies:
 
   # UI components
   cached_network_image: ^3.3.0
-  image_picker: ^1.0.4
-
+  carousel_slider: ^5.1.1
+  smooth_page_indicator: ^1.2.1
   # Utilities
   uuid: ^4.2.1
   intl: ^0.19.0
