@@ -1,6 +1,5 @@
 import 'package:ecommerce_firebase/features/dashboard/widgets/poster_widget.dart';
 import 'package:flutter/material.dart';
-
 import 'package:ecommerce_firebase/widgets/searchbar_field.dart';
 
 class DashboardView extends StatefulWidget {
@@ -35,7 +34,8 @@ class _DashboardViewState extends State<DashboardView> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(width: screenWidth * 0.6, child: SearchbarField()),
+                  SizedBox(width: screenWidth * 0.6, child:
+                  SearchbarField()),
                 ],
               ),
               SizedBox(height: 20),
