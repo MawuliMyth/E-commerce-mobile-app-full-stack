@@ -1,6 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../controllers/signup_controller.dart';
+import '../controllers/google_signin_controller.dart';
 
 class RegisterView extends StatefulWidget {
   static String id = 'register_view';
@@ -18,7 +19,7 @@ class _RegisterViewState extends State<RegisterView> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
-  final RegisterController _registerController = RegisterController();
+  final GoogleAuthController _registerController = GoogleAuthController();
   String _selectedCountryCode = '+233'; // Default to Ghana
 
   // List of countries with their codes and flags
@@ -389,9 +390,9 @@ class _RegisterViewState extends State<RegisterView> {
     );
   }
 
-  // Handle Google Sign In
+  // Handle Google Sign Up
   Future<void> _handleGoogleSignIn() async {
-    await _registerController.handleGoogleSignIn(
+    final result = await _registerController.signInWithGoogle(
       context: context,
       setLoading: (isLoading) => setState(() => _isLoading = isLoading),
       onSuccess: () {
@@ -399,5 +400,19 @@ class _RegisterViewState extends State<RegisterView> {
         // Navigator.pushReplacementNamed(context, '/home');
       },
     );
+
+    if (result['success'] == true) {
+      if (kDebugMode) {
+        print("Google sign-in successful: ${result['data']}");
+      }
+    } else {
+      // ❌ Not successful, show an error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] ?? 'Google sign-in failed'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

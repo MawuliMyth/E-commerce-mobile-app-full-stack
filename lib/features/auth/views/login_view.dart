@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../controllers/forgot_password_controller.dart';
 import '../controllers/login_controller.dart';
 
 class LoginView extends StatefulWidget {
@@ -81,9 +83,9 @@ class _LoginViewState extends State<LoginView> {
                 ],
               ),
             ),
-        
+
             SizedBox(height: 20),
-        
+
             // Continue with Google button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -115,7 +117,9 @@ class _LoginViewState extends State<LoginView> {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(
                 children: [
-                  Flexible(child: Divider(color: Colors.grey[300], thickness: 1)),
+                  Flexible(
+                    child: Divider(color: Colors.grey[300], thickness: 1),
+                  ),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
@@ -123,11 +127,13 @@ class _LoginViewState extends State<LoginView> {
                       style: TextStyle(color: Colors.grey[500], fontSize: 14),
                     ),
                   ),
-                  Flexible(child: Divider(color: Colors.grey[300], thickness: 1)),
+                  Flexible(
+                    child: Divider(color: Colors.grey[300], thickness: 1),
+                  ),
                 ],
               ),
             ),
-        
+
             // Form fields
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -140,7 +146,10 @@ class _LoginViewState extends State<LoginView> {
                     children: [
                       // Country Flag Dropdown
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 9, vertical: 8),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.grey[100],
                           borderRadius: BorderRadius.circular(12),
@@ -171,11 +180,11 @@ class _LoginViewState extends State<LoginView> {
                         ),
                       ),
                       SizedBox(width: 12),
-        
+
                       // Vertical Divider
                       Container(width: 1, height: 40, color: Colors.grey[300]),
                       SizedBox(width: 12),
-        
+
                       // Phone Number Input with Country Code Prefix
                       Flexible(
                         child: TextField(
@@ -214,9 +223,9 @@ class _LoginViewState extends State<LoginView> {
                       ),
                     ],
                   ),
-        
+
                   SizedBox(height: 20),
-        
+
                   // Password field
                   TextField(
                     controller: _passwordController,
@@ -263,37 +272,41 @@ class _LoginViewState extends State<LoginView> {
                       ),
                     ),
                   ),
-                  TextButton(onPressed: (){}, child: Text('Forgot Password?')),
-        
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, ForgotPasswordView.id);
+                    },
+                    child: Text('Forgot Password?'),
+                  ),
+
                   SizedBox(height: 20),
-        
+
                   // Done button
                   Container(
                     width: double.infinity,
                     margin: EdgeInsets.only(bottom: 16),
                     child: ElevatedButton(
-                      onPressed: null, // Disabled
+                      onPressed: () {}, // empty function, button stays enabled
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xff004CFF),
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 18),
+                        backgroundColor: const Color(0xff004CFF),
+                        padding: const EdgeInsets.symmetric(vertical: 18),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                         elevation: 0,
                       ),
-                      child: Text(
+                      child: const Text(
                         'Done',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
+                          color: Colors.white,
                         ),
                       ),
                     ),
                   ),
-        
-                  // Cancel button
 
+                  // Cancel button
                 ],
               ),
             ),
