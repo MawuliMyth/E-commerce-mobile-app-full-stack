@@ -1,4 +1,5 @@
 import 'package:ecommerce_firebase/features/dashboard/widgets/poster_widget.dart';
+import 'package:ecommerce_firebase/widgets/circle_icon_button.dart';
 import 'package:flutter/material.dart';
 import 'package:ecommerce_firebase/widgets/searchbar_field.dart';
 
@@ -34,12 +35,42 @@ class _DashboardViewState extends State<DashboardView> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(width: screenWidth * 0.6, child:
-                  SearchbarField()),
+                  SizedBox(width: screenWidth * 0.6, child: SearchbarField()),
                 ],
               ),
               SizedBox(height: 20),
               PosterCarousel(),
+              SizedBox(height: 20),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Categories',
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.05,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  Row(
+                    children: [
+                      Text(
+                        'See All',
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.05,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      CircleIconButton(
+                        icon: Icons.arrow_forward,
+                        onPressed: () {},
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ],
           ),
         ),
