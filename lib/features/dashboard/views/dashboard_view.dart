@@ -3,6 +3,8 @@ import 'package:ecommerce_firebase/widgets/circle_icon_button.dart';
 import 'package:flutter/material.dart';
 import 'package:ecommerce_firebase/widgets/searchbar_field.dart';
 
+import '../widgets/category_grid_widget.dart';
+
 class DashboardView extends StatefulWidget {
   static const String id = 'dashboard_view';
 
@@ -71,6 +73,10 @@ class _DashboardViewState extends State<DashboardView> {
                   ),
                 ],
               ),
+              SizedBox(height: 20),
+              CategoryGrid(),
+              SizedBox(height: 20),
+
             ],
           ),
         ),
