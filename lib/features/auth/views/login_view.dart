@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../Presentation/home_bot_nav.dart';
 import '../../../Presentation/home_screen.dart';
 import '../controllers/forgot_password_controller.dart';
 import '../controllers/login_controller.dart';
@@ -337,7 +338,7 @@ class _LoginViewState extends State<LoginView> {
       setLoading: (isLoading) => setState(() => _isLoading = isLoading),
       onSuccess: () {
         // Navigate to home screen or handle success
-        Navigator.pushNamed(context, HomeScreen.id);
+        Navigator.pushNamed(context, HomeBotnav.id);
       },
     );
   }
