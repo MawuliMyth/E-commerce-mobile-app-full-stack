@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../controllers/google_signin_controller.dart';
+import '../../../Presentation/home_screen.dart';
+import '../controllers/signup_controller.dart';
 
 class RegisterView extends StatefulWidget {
   static String id = 'register_view';
@@ -19,7 +20,7 @@ class _RegisterViewState extends State<RegisterView> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
-  final GoogleAuthController _registerController = GoogleAuthController();
+  final RegisterController _registerController = RegisterController();
   String _selectedCountryCode = '+233'; // Default to Ghana
 
   // List of countries with their codes and flags
@@ -397,7 +398,7 @@ class _RegisterViewState extends State<RegisterView> {
       setLoading: (isLoading) => setState(() => _isLoading = isLoading),
       onSuccess: () {
         // Navigate to home screen or handle success
-        // Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushNamed(context, HomeScreen.id);
       },
     );
 
