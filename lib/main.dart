@@ -11,6 +11,7 @@ import 'features/auth/provider/auth_provider.dart';
 import 'features/auth/controllers/forgot_password_controller.dart';
 import 'features/auth/views/login_view.dart';
 import 'features/auth/views/register_view.dart';
+import 'features/dashboard/category_provider.dart';
 import 'features/profile/views/profile_view.dart';
 
 void main() async {
@@ -28,8 +29,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => AuthProvider(),
+    return  MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => CategoryProvider()),
+      ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         initialRoute: WelcomeScreen.id,
@@ -47,5 +51,6 @@ class MyApp extends StatelessWidget {
         },
       ),
     );
+
   }
 }
