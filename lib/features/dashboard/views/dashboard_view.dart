@@ -75,7 +75,6 @@ class _DashboardViewState extends State<DashboardView> {
               ),
               SizedBox(height: 20),
               Expanded(child: CategoriesView()),
-
             ],
           ),
         ),

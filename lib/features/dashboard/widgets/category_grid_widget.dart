@@ -47,7 +47,7 @@ class _CategoriesViewState extends State<CategoriesView> {
               crossAxisSpacing: 12,
               childAspectRatio: 0.75,
             ),
-            itemCount: categories.length,
+            itemCount: 4,
             itemBuilder: (context, index) {
               return buildCategoryCard(categories[index]);
             },
@@ -141,7 +141,6 @@ class _CategoriesViewState extends State<CategoriesView> {
                   category.name,
                   style: const TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.bold,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
