@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../controllers/poster_controller.dart';
@@ -13,13 +14,40 @@ class PosterCarousel extends StatefulWidget {
 class _PosterCarouselState extends State<PosterCarousel> {
   final PageController _pageController = PageController();
   final PosterController _posterController = PosterController();
-
   late Future<List<Poster>> futurePosters;
+  Timer? _autoPlayTimer;
+  int _currentPage = 0;
 
   @override
   void initState() {
     super.initState();
     futurePosters = _posterController.fetchPosters();
+    _startAutoPlay();
+  }
+
+  void _startAutoPlay() {
+    // Start a timer that changes the page every 3 seconds
+    _autoPlayTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (mounted) {
+        futurePosters.then((posters) {
+          if (posters.isNotEmpty) {
+            _currentPage = (_currentPage + 1) % posters.length;
+            _pageController.animateToPage(
+              _currentPage,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _autoPlayTimer?.cancel(); // Cancel the timer to prevent memory leaks
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -44,6 +72,11 @@ class _PosterCarouselState extends State<PosterCarousel> {
               PageView.builder(
                 controller: _pageController,
                 itemCount: posters.length,
+                onPageChanged: (index) {
+                  setState(() {
+                    _currentPage = index; // Update current page on manual swipe
+                  });
+                },
                 itemBuilder: (context, index) {
                   return ClipRRect(
                     borderRadius: BorderRadius.circular(16),
@@ -58,7 +91,6 @@ class _PosterCarouselState extends State<PosterCarousel> {
                   );
                 },
               ),
-
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
@@ -78,10 +110,7 @@ class _PosterCarouselState extends State<PosterCarousel> {
             ],
           ),
         );
-
       },
     );
   }
 }
-
-

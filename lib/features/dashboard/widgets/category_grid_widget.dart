@@ -36,6 +36,21 @@ class _CategoriesViewState extends State<CategoriesView> {
           );
         }
 
+        // Filter categories with valid products
+        final validCategories = categories.where((category) {
+          final subCategory = category.subCategories.firstWhere(
+                (sub) => sub.products.isNotEmpty,
+            orElse: () => SubCategory(id: '', name: '', products: []),
+          );
+          return subCategory.products.isNotEmpty;
+        }).toList();
+
+        if (validCategories.isEmpty) {
+          return const Center(
+            child: Text("No categories with products found"),
+          );
+        }
+
         return SingleChildScrollView(
           child: GridView.builder(
             padding: const EdgeInsets.all(12),
@@ -47,9 +62,9 @@ class _CategoriesViewState extends State<CategoriesView> {
               crossAxisSpacing: 12,
               childAspectRatio: 0.75,
             ),
-            itemCount: 4,
+            itemCount: validCategories.length,
             itemBuilder: (context, index) {
-              return buildCategoryCard(categories[index]);
+              return buildCategoryCard(validCategories[index]);
             },
           ),
         );
@@ -63,6 +78,7 @@ class _CategoriesViewState extends State<CategoriesView> {
       orElse: () => SubCategory(id: '', name: '', products: []),
     );
 
+    // This check is redundant now due to filtering in build, but kept for robustness
     if (subCategory.products.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -71,7 +87,7 @@ class _CategoriesViewState extends State<CategoriesView> {
 
     Map<String, List<Product>> productsByBrand = {};
     for (var product in allProducts) {
-      final brandName = "Brand";
+      final brandName = "Brand"; // Consider using actual brand data if available
       productsByBrand.putIfAbsent(brandName, () => []).add(product);
     }
 
@@ -102,7 +118,7 @@ class _CategoriesViewState extends State<CategoriesView> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,15 +157,15 @@ class _CategoriesViewState extends State<CategoriesView> {
                   category.name,
                   style: const TextStyle(
                     fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
-                    color: Color(0xffDFE9FF),
+                    color: const Color(0xffDFE9FF),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 10),
