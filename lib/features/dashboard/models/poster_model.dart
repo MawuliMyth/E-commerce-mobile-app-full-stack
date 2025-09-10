@@ -6,8 +6,15 @@ class Poster {
 
   factory Poster.fromJson(Map<String, dynamic> json) {
     return Poster(
-      id: json['_id'],
-      imageUrl: json['imageUrl'],
+      id: json['_id'] ?? '', // Fallback to empty string if null
+      imageUrl: json['imageUrl'] ?? 'https://via.placeholder.com/150', // Fallback URL
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'imageUrl': imageUrl,
+    };
   }
 }

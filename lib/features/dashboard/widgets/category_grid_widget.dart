@@ -53,7 +53,7 @@ class _CategoriesViewState extends State<CategoriesView> {
 
         return SingleChildScrollView(
           child: GridView.builder(
-            padding: const EdgeInsets.all(12),
+
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(

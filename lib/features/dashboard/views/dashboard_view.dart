@@ -73,8 +73,38 @@ class _DashboardViewState extends State<DashboardView> {
                   ),
                 ],
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 10),
               Expanded(child: CategoriesView()),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Flash Sale',
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.05,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  Row(
+                    children: [
+                      Text(
+                        'See All',
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.05,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      CircleIconButton(
+                        icon: Icons.arrow_forward,
+                        onPressed: () {},
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ],
           ),
         ),

@@ -17,18 +17,26 @@ class _PosterCarouselState extends State<PosterCarousel> {
   late Future<List<Poster>> futurePosters;
   Timer? _autoPlayTimer;
   int _currentPage = 0;
+  bool _isPageViewBuilt = false;
 
   @override
   void initState() {
     super.initState();
     futurePosters = _posterController.fetchPosters();
-    _startAutoPlay();
+    // Defer auto-play until after the first frame and posters are loaded
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      futurePosters.then((posters) {
+        if (mounted && posters.isNotEmpty && posters.length > 1) {
+          _startAutoPlay();
+        }
+      });
+    });
   }
 
   void _startAutoPlay() {
-    // Start a timer that changes the page every 3 seconds
+    _autoPlayTimer?.cancel(); // Cancel any existing timer
     _autoPlayTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (mounted) {
+      if (mounted && _pageController.hasClients && _isPageViewBuilt) {
         futurePosters.then((posters) {
           if (posters.isNotEmpty) {
             _currentPage = (_currentPage + 1) % posters.length;
@@ -39,13 +47,15 @@ class _PosterCarouselState extends State<PosterCarousel> {
             );
           }
         });
+      } else if (!mounted) {
+        timer.cancel(); // Stop timer if widget is disposed
       }
     });
   }
 
   @override
   void dispose() {
-    _autoPlayTimer?.cancel(); // Cancel the timer to prevent memory leaks
+    _autoPlayTimer?.cancel();
     _pageController.dispose();
     super.dispose();
   }
@@ -56,14 +66,32 @@ class _PosterCarouselState extends State<PosterCarousel> {
       future: futurePosters,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator(
+
+          ));
         } else if (snapshot.hasError) {
-          return Center(child: Text("Error: ${snapshot.error}"));
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text("Error: ${snapshot.error}"),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      futurePosters = _posterController.fetchPosters(forceRefresh: true);
+                    });
+                  },
+                  child: const Text("Retry"),
+                ),
+              ],
+            ),
+          );
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const Center(child: Text("No posters available"));
         }
 
         final posters = snapshot.data!;
+        _isPageViewBuilt = true;
 
         return SizedBox(
           height: 180,
@@ -74,7 +102,14 @@ class _PosterCarouselState extends State<PosterCarousel> {
                 itemCount: posters.length,
                 onPageChanged: (index) {
                   setState(() {
-                    _currentPage = index; // Update current page on manual swipe
+                    _currentPage = index;
+                    // Pause auto-play on manual swipe, resume after 5 seconds
+                    _autoPlayTimer?.cancel();
+                    Future.delayed(const Duration(seconds: 5), () {
+                      if (mounted && posters.length > 1) {
+                        _startAutoPlay();
+                      }
+                    });
                   });
                 },
                 itemBuilder: (context, index) {
@@ -86,6 +121,9 @@ class _PosterCarouselState extends State<PosterCarousel> {
                       loadingBuilder: (context, child, loadingProgress) {
                         if (loadingProgress == null) return child;
                         return const Center(child: CircularProgressIndicator());
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(child: Text("Failed to load image"));
                       },
                     ),
                   );
