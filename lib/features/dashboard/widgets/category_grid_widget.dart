@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../category_provider.dart';
 import '../models/category_model.dart';
 
@@ -17,7 +16,10 @@ class _CategoriesViewState extends State<CategoriesView> {
   @override
   void initState() {
     super.initState();
-    Provider.of<CategoryProvider>(context, listen: false).fetchCategories();
+    // Defer fetchCategories until after the build phase
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<CategoryProvider>(context, listen: false).fetchCategories();
+    });
   }
 
   @override
@@ -53,7 +55,6 @@ class _CategoriesViewState extends State<CategoriesView> {
 
         return SingleChildScrollView(
           child: GridView.builder(
-
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -72,13 +73,13 @@ class _CategoriesViewState extends State<CategoriesView> {
     );
   }
 
+  // Rest of the buildCategoryCard method remains unchanged
   Widget buildCategoryCard(Category category) {
     final subCategory = category.subCategories.firstWhere(
           (sub) => sub.products.isNotEmpty,
       orElse: () => SubCategory(id: '', name: '', products: []),
     );
 
-    // This check is redundant now due to filtering in build, but kept for robustness
     if (subCategory.products.isEmpty) {
       return const SizedBox.shrink();
     }
