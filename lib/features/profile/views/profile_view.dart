@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:ecommerce_firebase/features/profile/views/category_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -39,18 +40,67 @@ class _CategoriesScreenState extends State<ProfileView> {
             );
           }
 
-          return GridView.builder(
+          return Padding(
             padding: const EdgeInsets.all(12),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2, // 2 per row
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: 0.75,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ✅ Header Row with "Categories" + "See All"
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Categories",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const CategoriesScreen(),
+                          ),
+                        );
+                      },
+                      child: Row(
+                        children: const [
+                          Text(
+                            "See All",
+                            style: TextStyle(
+                              color: Colors.deepPurple,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Icon(Icons.arrow_forward, color: Colors.deepPurple),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 10),
+
+                // ✅ Expanded Grid
+                Expanded(
+                  child: GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2, // 2 per row
+                          mainAxisSpacing: 12,
+                          crossAxisSpacing: 12,
+                          childAspectRatio: 0.75,
+                        ),
+                    itemCount: categories.length,
+                    itemBuilder: (context, index) {
+                      return buildCategoryCard(categories[index]);
+                    },
+                  ),
+                ),
+              ],
             ),
-            itemCount: categories.length,
-            itemBuilder: (context, index) {
-              return buildCategoryCard(categories[index]);
-            },
           );
         },
       ),
@@ -203,212 +253,3 @@ class _CategoriesScreenState extends State<ProfileView> {
     );
   }
 }
-
-// // views/product_details_screen.dart
-// class ProductDetailsScreen extends StatelessWidget {
-//   // final ProductModel product;
-//
-//   const ProductDetailsScreen({super.key, required this.product});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         backgroundColor: Colors.white,
-//         elevation: 0,
-//         leading: IconButton(
-//           icon: const Icon(Icons.arrow_back, color: Colors.black),
-//           onPressed: () => Navigator.pop(context),
-//         ),
-//         title: Text(
-//           product.name,
-//           style: const TextStyle(
-//             color: Colors.black,
-//             fontSize: 20,
-//             fontWeight: FontWeight.w600,
-//           ),
-//         ),
-//       ),
-//       body: SingleChildScrollView(
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             // Image carousel
-//             SizedBox(
-//               height: 300,
-//               child: PageView.builder(
-//                 itemCount: product.images.length,
-//                 itemBuilder: (context, index) {
-//                   return Container(
-//                     margin: const EdgeInsets.symmetric(horizontal: 16),
-//                     decoration: BoxDecoration(
-//                       borderRadius: BorderRadius.circular(16),
-//                     ),
-//                     child: ClipRRect(
-//                       borderRadius: BorderRadius.circular(16),
-//                       child: Image.network(
-//                         product.images[index].url,
-//                         fit: BoxFit.cover,
-//                         errorBuilder: (context, error, stackTrace) {
-//                           return Container(
-//                             color: Colors.grey[200],
-//                             child: const Center(
-//                               child: Icon(
-//                                 Icons.image_not_supported,
-//                                 size: 64,
-//                                 color: Colors.grey,
-//                               ),
-//                             ),
-//                           );
-//                         },
-//                       ),
-//                     ),
-//                   );
-//                 },
-//               ),
-//             ),
-//
-//             // Product details
-//             Padding(
-//               padding: const EdgeInsets.all(16),
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   Text(
-//                     product.name,
-//                     style: const TextStyle(
-//                       fontSize: 24,
-//                       fontWeight: FontWeight.bold,
-//                       color: Colors.black87,
-//                     ),
-//                   ),
-//                   const SizedBox(height: 8),
-//                   Text(
-//                     product.brand.name,
-//                     style: TextStyle(
-//                       fontSize: 16,
-//                       color: Colors.grey[600],
-//                       fontWeight: FontWeight.w500,
-//                     ),
-//                   ),
-//                   const SizedBox(height: 16),
-//                   Text(
-//                     '\$${product.price.toStringAsFixed(2)}',
-//                     style: const TextStyle(
-//                       fontSize: 28,
-//                       fontWeight: FontWeight.bold,
-//                       color: Colors.blue,
-//                     ),
-//                   ),
-//                   const SizedBox(height: 16),
-//                   Text(
-//                     'Description',
-//                     style: TextStyle(
-//                       fontSize: 18,
-//                       fontWeight: FontWeight.w600,
-//                       color: Colors.black87,
-//                     ),
-//                   ),
-//                   const SizedBox(height: 8),
-//                   Text(
-//                     product.description,
-//                     style: TextStyle(
-//                       fontSize: 16,
-//                       color: Colors.grey[700],
-//                       height: 1.5,
-//                     ),
-//                   ),
-//                   const SizedBox(height: 16),
-//                   Row(
-//                     children: [
-//                       Text(
-//                         'Category: ',
-//                         style: TextStyle(
-//                           fontSize: 16,
-//                           fontWeight: FontWeight.w600,
-//                           color: Colors.black87,
-//                         ),
-//                       ),
-//                       Text(
-//                         product.category.name,
-//                         style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-//                       ),
-//                     ],
-//                   ),
-//                   const SizedBox(height: 8),
-//                   Row(
-//                     children: [
-//                       Text(
-//                         'Sub Category: ',
-//                         style: TextStyle(
-//                           fontSize: 16,
-//                           fontWeight: FontWeight.w600,
-//                           color: Colors.black87,
-//                         ),
-//                       ),
-//                       Text(
-//                         product.subCategory.name,
-//                         style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-//                       ),
-//                     ],
-//                   ),
-//                   const SizedBox(height: 8),
-//                   Row(
-//                     children: [
-//                       Text(
-//                         'Available: ',
-//                         style: TextStyle(
-//                           fontSize: 16,
-//                           fontWeight: FontWeight.w600,
-//                           color: Colors.black87,
-//                         ),
-//                       ),
-//                       Text(
-//                         '${product.quantity} items',
-//                         style: TextStyle(
-//                           fontSize: 16,
-//                           color: product.quantity > 0
-//                               ? Colors.green
-//                               : Colors.red,
-//                           fontWeight: FontWeight.w500,
-//                         ),
-//                       ),
-//                     ],
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//       bottomNavigationBar: Container(
-//         padding: const EdgeInsets.all(16),
-//         child: ElevatedButton(
-//           onPressed: product.quantity > 0
-//               ? () {
-//                   // Add to cart logic
-//                   ScaffoldMessenger.of(context).showSnackBar(
-//                     SnackBar(
-//                       content: Text('${product.name} added to cart'),
-//                       backgroundColor: Colors.green,
-//                     ),
-//                   );
-//                 }
-//               : null,
-//           style: ElevatedButton.styleFrom(
-//             backgroundColor: Colors.blue,
-//             foregroundColor: Colors.white,
-//             minimumSize: const Size(double.infinity, 50),
-//             shape: RoundedRectangleBorder(
-//               borderRadius: BorderRadius.circular(12),
-//             ),
-//           ),
-//           child: Text(
-//             product.quantity > 0 ? 'Add to Cart' : 'Out of Stock',
-//             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
