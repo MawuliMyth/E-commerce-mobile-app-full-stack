@@ -1,7 +1,6 @@
-import 'package:flutter/foundation.dart';
+import 'package:ecommerce_firebase/Presentation/home_bot_nav.dart';
 import 'package:flutter/material.dart';
 
-import '../../../Presentation/home_screen.dart';
 import '../controllers/signup_controller.dart';
 
 class RegisterView extends StatefulWidget {
@@ -21,9 +20,8 @@ class _RegisterViewState extends State<RegisterView> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
   final RegisterController _registerController = RegisterController();
-  String _selectedCountryCode = '+233'; // Default to Ghana
+  String _selectedCountryCode = '+233';
 
-  // List of countries with their codes and flags
   final List<Map<String, String>> _countries = [
     {'name': 'Ghana', 'code': '+233', 'flag': '🇬🇭'},
     {'name': 'Nigeria', 'code': '+234', 'flag': '🇳🇬'},
@@ -41,10 +39,9 @@ class _RegisterViewState extends State<RegisterView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromRGBO(255, 255, 255, 1),
+      backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
       body: Stack(
         children: [
-          // Light blue background element (top left)
           Positioned(
             top: 0,
             left: 0,
@@ -54,8 +51,6 @@ class _RegisterViewState extends State<RegisterView> {
               fit: BoxFit.contain,
             ),
           ),
-
-          // Deep blue background element (right side)
           Positioned(
             top: 120,
             right: -50,
@@ -66,8 +61,6 @@ class _RegisterViewState extends State<RegisterView> {
               fit: BoxFit.contain,
             ),
           ),
-
-          // Main title
           Positioned(
             top: 179,
             left: 24,
@@ -82,8 +75,6 @@ class _RegisterViewState extends State<RegisterView> {
               ),
             ),
           ),
-
-          // Scrollable form content
           Positioned.fill(
             top: 320,
             child: SingleChildScrollView(
@@ -91,8 +82,6 @@ class _RegisterViewState extends State<RegisterView> {
               child: Column(
                 children: [
                   const SizedBox(height: 20),
-
-                  // Continue with Google button
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
@@ -116,8 +105,6 @@ class _RegisterViewState extends State<RegisterView> {
                     ),
                   ),
                   const SizedBox(height: 24),
-
-                  // Divider with "or" text
                   Row(
                     children: [
                       Flexible(
@@ -139,8 +126,6 @@ class _RegisterViewState extends State<RegisterView> {
                     ],
                   ),
                   SizedBox(height: 40),
-
-                  // Full name field
                   TextField(
                     controller: _fullNameController,
                     decoration: InputDecoration(
@@ -172,10 +157,7 @@ class _RegisterViewState extends State<RegisterView> {
                       ),
                     ),
                   ),
-
                   SizedBox(height: 24),
-
-                  // Email field
                   TextField(
                     controller: _emailController,
                     decoration: InputDecoration(
@@ -208,10 +190,7 @@ class _RegisterViewState extends State<RegisterView> {
                     ),
                     keyboardType: TextInputType.emailAddress,
                   ),
-
                   SizedBox(height: 24),
-
-                  // Password field
                   TextField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
@@ -257,13 +236,9 @@ class _RegisterViewState extends State<RegisterView> {
                       ),
                     ),
                   ),
-
                   SizedBox(height: 24),
-
-                  // Phone number field with country code dropdown
                   Row(
                     children: [
-                      // Country Flag Dropdown
                       Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: 9,
@@ -275,7 +250,7 @@ class _RegisterViewState extends State<RegisterView> {
                         ),
                         child: DropdownButton<String>(
                           value: _selectedCountryCode,
-                          underline: SizedBox(), // Remove default underline
+                          underline: SizedBox(),
                           icon: Icon(
                             Icons.keyboard_arrow_down,
                             color: Colors.grey[600],
@@ -299,17 +274,12 @@ class _RegisterViewState extends State<RegisterView> {
                         ),
                       ),
                       SizedBox(width: 12),
-
-                      // Vertical Divider
                       Container(width: 1, height: 40, color: Colors.grey[300]),
                       SizedBox(width: 12),
-
-                      // Phone Number Input with Country Code Prefix
                       Flexible(
                         child: TextField(
                           controller: _phoneNumberController,
                           decoration: InputDecoration(
-                            // Removed hintText to show country code immediately
                             prefixText: _selectedCountryCode,
                             prefixStyle: TextStyle(
                               color: Colors.black87,
@@ -343,14 +313,65 @@ class _RegisterViewState extends State<RegisterView> {
                       ),
                     ],
                   ),
-
                   SizedBox(height: 24),
-
                   Container(
                     width: double.infinity,
                     margin: EdgeInsets.only(bottom: 16),
                     child: ElevatedButton(
-                      onPressed: () {}, // empty function, button stays enabled
+                      onPressed: _isLoading
+                          ? null
+                          : () async {
+                              if (_fullNameController.text.isEmpty ||
+                                  _emailController.text.isEmpty ||
+                                  _passwordController.text.isEmpty ||
+                                  _phoneNumberController.text.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Please fill in all fields'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return;
+                              }
+                              if (!_emailController.text.contains('@')) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Please enter a valid email'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return;
+                              }
+                              if (_passwordController.text.length < 6) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Password must be at least 6 characters',
+                                    ),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return;
+                              }
+                              await _registerController
+                                  .handleEmailPasswordRegistration(
+                                    email: _emailController.text,
+                                    password: _passwordController.text,
+                                    fullName: _fullNameController.text,
+                                    phone:
+                                        _selectedCountryCode +
+                                        _phoneNumberController.text,
+                                    context: context,
+                                    setLoading: (isLoading) =>
+                                        setState(() => _isLoading = isLoading),
+                                    onSuccess: () {
+                                      Navigator.pushReplacementNamed(
+                                        context,
+                                        HomeBotnav.id,
+                                      );
+                                    },
+                                  );
+                            },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xff004CFF),
                         padding: const EdgeInsets.symmetric(vertical: 18),
@@ -369,8 +390,6 @@ class _RegisterViewState extends State<RegisterView> {
                       ),
                     ),
                   ),
-
-                  // Cancel button
                   TextButton(
                     onPressed: () {
                       Navigator.pop(context);
@@ -380,7 +399,6 @@ class _RegisterViewState extends State<RegisterView> {
                       style: TextStyle(color: Colors.grey[600], fontSize: 16),
                     ),
                   ),
-
                   SizedBox(height: 20),
                 ],
               ),
@@ -391,29 +409,13 @@ class _RegisterViewState extends State<RegisterView> {
     );
   }
 
-  // Handle Google Sign Up
   Future<void> _handleGoogleSignIn() async {
-    final result = await _registerController.signInWithGoogle(
+    await _registerController.handleGoogleSignIn(
       context: context,
       setLoading: (isLoading) => setState(() => _isLoading = isLoading),
       onSuccess: () {
-        // Navigate to home screen or handle success
-        Navigator.pushNamed(context, HomeScreen.id);
+        Navigator.pushReplacementNamed(context, HomeBotnav.id);
       },
     );
-
-    if (result['success'] == true) {
-      if (kDebugMode) {
-        print("Google sign-in successful: ${result['data']}");
-      }
-    } else {
-      // ❌ Not successful, show an error message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message'] ?? 'Google sign-in failed'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
   }
 }

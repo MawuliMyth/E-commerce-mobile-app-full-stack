@@ -1,57 +1,103 @@
 import 'dart:convert';
 
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+
+import '../models/auth_model.dart';
+import '../provider/auth_provider.dart';
+import 'auth_controller.dart';
 
 class RegisterController {
   final FirebaseAuth _auth;
   final GoogleSignIn _googleSignIn;
+  final AuthController _authController = AuthController();
+  final String _registerApiUrl =
+      'https://online-store-api-ashy.vercel.app/api/users/register';
 
   RegisterController({FirebaseAuth? auth, GoogleSignIn? googleSignIn})
     : _auth = auth ?? FirebaseAuth.instance,
       _googleSignIn = googleSignIn ?? GoogleSignIn();
 
-  // Handle email/password registration
   Future<void> handleEmailPasswordRegistration({
     required String email,
     required String password,
     required String fullName,
-    required String phoneNumber,
+    required String phone,
     required BuildContext context,
     required Function(bool) setLoading,
     VoidCallback? onSuccess,
   }) async {
     setLoading(true);
-
     try {
-      // Create user with email and password
-      final UserCredential userCredential = await _auth
-          .createUserWithEmailAndPassword(
-            email: email.trim(),
-            password: password.trim(),
-          );
+      final authModel = AuthModel(
+        fullname: fullName.trim(),
+        email: email.trim(),
+        password: password.trim(),
+        phone: phone.trim(),
+      );
 
-      if (userCredential.user != null) {
-        // Update user profile with full name
-        await userCredential.user!.updateDisplayName(fullName.trim());
+      final response = await http.post(
+        Uri.parse(_registerApiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(authModel.toJson()),
+      );
 
-        // Optionally, store phone number in Firebase (e.g., Firestore) or other storage
-        // For now, we'll just print it (replace with actual storage logic if needed)
-        print('Phone number: $phoneNumber');
+      print(
+        'RegisterController: API Response = ${response.body}, statusCode=${response.statusCode}',
+      );
 
-        // Successfully registered
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        final accessToken = data['tokens']?['accessToken'];
+        final refreshToken = data['tokens']?['refreshToken'];
+
+        if (accessToken == null || refreshToken == null) {
+          throw Exception('Missing tokens in API response');
+        }
+
+        final updatedAuthModel = AuthModel(
+          fullname:
+              data['data']['fullname'] ??
+              data['data']['name'] ??
+              fullName.trim(),
+          email: data['data']['email'] ?? email.trim(),
+          password: password.trim(),
+          phone: data['data']['phone'] ?? phone.trim(),
+          userId:
+              data['data']['_id']?.toString() ?? data['data']['id']?.toString(),
+          token: accessToken,
+        );
+
+        print(
+          'RegisterController: Storing tokens and user data - fullname=${updatedAuthModel.fullname}, accessToken=$accessToken',
+        );
+        await _authController.storeTokens(accessToken, refreshToken);
+        await _authController.storeUserData(updatedAuthModel);
+
+        print(
+          'RegisterController: Updating AuthProvider with fullname=${updatedAuthModel.fullname}',
+        );
+        Provider.of<AuthProvider>(
+          context,
+          listen: false,
+        ).setUser(updatedAuthModel);
+
         onSuccess?.call();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Successfully registered!'),
             backgroundColor: Colors.green,
           ),
         );
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['message'] ?? 'Registration failed');
       }
     } catch (e) {
-      // Handle error
+      print('RegisterController: Error = $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Registration failed: ${e.toString()}'),
@@ -63,100 +109,74 @@ class RegisterController {
     }
   }
 
-  // Handle Google Sign In for registration
-  Future<Map<String, dynamic>> signInWithGoogle({
+  Future<void> handleGoogleSignIn({
     required BuildContext context,
     required Function(bool) setLoading,
     VoidCallback? onSuccess,
   }) async {
     setLoading(true);
-
     try {
-      // Step 1: Google sign-in
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
         setLoading(false);
-        return {'success': false, 'message': 'Sign-in cancelled by user'};
+        return;
       }
-
-      // Step 2: Get Google Auth details
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
-
-      // Step 3: Firebase credential
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-
-      // Step 4: Sign in with Firebase
       final UserCredential userCredential = await _auth.signInWithCredential(
         credential,
       );
-      final User? user = userCredential.user;
+      if (userCredential.user != null) {
+        final authModel = AuthModel(
+          fullname: userCredential.user!.displayName ?? 'Google User',
+          email: userCredential.user!.email ?? '',
+          password: '',
+          phone: userCredential.user!.phoneNumber ?? '',
+          userId: userCredential.user!.uid,
+          token: googleAuth.accessToken,
+        );
 
-      if (user != null) {
-        final String? idToken = await user.getIdToken();
+        print(
+          'RegisterController: Storing user data - fullname=${authModel.fullname}, token=${authModel.token}',
+        );
+        await _authController.storeUserData(authModel);
+        if (googleAuth.accessToken != null) {
+          print(
+            'RegisterController: Storing Google tokens - accessToken=${googleAuth.accessToken}',
+          );
+          await _authController.storeTokens(
+            googleAuth.accessToken!,
+            googleAuth.accessToken!,
+          );
+        }
 
-        // Step 5: Send to backend (dynamic endpoint: login OR register)
-        final response = await _sendToBackend(idToken!, user);
+        print(
+          'RegisterController: Updating AuthProvider with fullname=${authModel.fullname}',
+        );
+        Provider.of<AuthProvider>(context, listen: false).setUser(authModel);
 
         onSuccess?.call();
-
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Successfully signed in with Google!'),
+          const SnackBar(
+            content: Text('Successfully registered with Google!'),
             backgroundColor: Colors.green,
           ),
         );
-
-        return {'success': true, 'data': response};
       }
-
-      return {'success': false, 'message': 'User is null after sign-in'};
     } catch (e) {
-      print('Google sign-in error: $e');
+      print('RegisterController: Google Sign-In Error = $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Google sign-in failed: $e'),
+          content: Text('Google registration failed: ${e.toString()}'),
           backgroundColor: Colors.red,
         ),
       );
-      return {'success': false, 'message': e.toString()};
     } finally {
       setLoading(false);
-    }
-  }
-
-  // 🔑 Shared backend call for login/register
-  Future<Map<String, dynamic>> _sendToBackend(
-    String idToken,
-    User firebaseUser,
-  ) async {
-    try {
-      final response = await http.post(
-        Uri.parse(
-          'https://online-store-api-ashy.vercel.app/api/users/google-auth',
-        ),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'idToken': idToken,
-          'userData': {
-            'uid': firebaseUser.uid,
-            'email': firebaseUser.email,
-            'displayName': firebaseUser.displayName,
-            'photoURL': firebaseUser.photoURL,
-          },
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception('Backend request failed: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Backend communication failed: $e');
     }
   }
 }

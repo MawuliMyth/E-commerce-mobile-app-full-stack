@@ -1,48 +1,94 @@
 import 'dart:convert';
 
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+
+import '../models/auth_model.dart';
+import '../models/login_model.dart';
+import '../provider/auth_provider.dart';
+import 'auth_controller.dart';
 
 class LoginController {
   final FirebaseAuth _auth;
   final GoogleSignIn _googleSignIn;
+  final AuthController _authController = AuthController();
+  final String _loginApiUrl =
+      'https://online-store-api-ashy.vercel.app/api/users/login';
 
   LoginController({FirebaseAuth? auth, GoogleSignIn? googleSignIn})
     : _auth = auth ?? FirebaseAuth.instance,
       _googleSignIn = googleSignIn ?? GoogleSignIn();
 
-  // Handle email/password login
   Future<void> handleEmailPasswordLogin({
-    required String email,
+    required String phone,
     required String password,
     required BuildContext context,
     required Function(bool) setLoading,
     VoidCallback? onSuccess,
   }) async {
     setLoading(true);
-
     try {
-      // Sign in with email and password
-      final UserCredential userCredential = await _auth
-          .signInWithEmailAndPassword(
-            email: email.trim(),
-            password: password.trim(),
-          );
+      final loginModel = LoginModel(
+        phone: phone.trim(),
+        password: password.trim(),
+      );
 
-      if (userCredential.user != null) {
-        // Successfully signed in
+      final response = await http.post(
+        Uri.parse(_loginApiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(loginModel.toJson()),
+      );
+
+      print(
+        'LoginController: API Response = ${response.body}, statusCode=${response.statusCode}',
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final accessToken = data['tokens']?['accessToken'];
+        final refreshToken = data['tokens']?['refreshToken'];
+
+        if (accessToken == null || refreshToken == null) {
+          throw Exception('Missing tokens in API response');
+        }
+
+        final authModel = AuthModel(
+          fullname: data['data']['fullname'] ?? data['data']['name'] ?? 'User',
+          email: data['data']['email'] ?? '',
+          password: password.trim(),
+          phone: data['data']['phone'] ?? phone.trim(),
+          userId:
+              data['data']['_id']?.toString() ?? data['data']['id']?.toString(),
+          token: accessToken,
+        );
+
+        print(
+          'LoginController: Storing tokens and user data - fullname=${authModel.fullname}, accessToken=$accessToken',
+        );
+        await _authController.storeTokens(accessToken, refreshToken);
+        await _authController.storeUserData(authModel);
+
+        print(
+          'LoginController: Updating AuthProvider with fullname=${authModel.fullname}, userId=${authModel.userId}',
+        );
+        Provider.of<AuthProvider>(context, listen: false).setUser(authModel);
+
         onSuccess?.call();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Successfully signed in!'),
             backgroundColor: Colors.green,
           ),
         );
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['message'] ?? 'Login failed');
       }
     } catch (e) {
-      // Handle error
+      print('LoginController: Error = $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Login failed: ${e.toString()}'),
@@ -54,100 +100,74 @@ class LoginController {
     }
   }
 
-  // Handle Google Sign In for registration
-  Future<Map<String, dynamic>> signInWithGoogle({
+  Future<void> handleGoogleSignIn({
     required BuildContext context,
     required Function(bool) setLoading,
     VoidCallback? onSuccess,
   }) async {
     setLoading(true);
-
     try {
-      // Step 1: Google sign-in
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
         setLoading(false);
-        return {'success': false, 'message': 'Sign-in cancelled by user'};
+        return;
       }
-
-      // Step 2: Get Google Auth details
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
-
-      // Step 3: Firebase credential
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-
-      // Step 4: Sign in with Firebase
       final UserCredential userCredential = await _auth.signInWithCredential(
         credential,
       );
-      final User? user = userCredential.user;
+      if (userCredential.user != null) {
+        final authModel = AuthModel(
+          fullname: userCredential.user!.displayName ?? 'Google User',
+          email: userCredential.user!.email ?? '',
+          password: '',
+          phone: userCredential.user!.phoneNumber ?? '',
+          userId: userCredential.user!.uid,
+          token: googleAuth.accessToken,
+        );
 
-      if (user != null) {
-        final String? idToken = await user.getIdToken();
+        print(
+          'LoginController: Storing user data - fullname=${authModel.fullname}, token=${authModel.token}',
+        );
+        await _authController.storeUserData(authModel);
+        if (googleAuth.accessToken != null) {
+          print(
+            'LoginController: Storing Google tokens - accessToken=${googleAuth.accessToken}',
+          );
+          await _authController.storeTokens(
+            googleAuth.accessToken!,
+            googleAuth.accessToken!,
+          );
+        }
 
-        // Step 5: Send to backend (dynamic endpoint: login OR register)
-        final response = await _sendToBackend(idToken!, user);
+        print(
+          'LoginController: Updating AuthProvider with fullname=${authModel.fullname}',
+        );
+        Provider.of<AuthProvider>(context, listen: false).setUser(authModel);
 
         onSuccess?.call();
-
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Successfully signed in with Google!'),
             backgroundColor: Colors.green,
           ),
         );
-
-        return {'success': true, 'data': response};
       }
-
-      return {'success': false, 'message': 'User is null after sign-in'};
     } catch (e) {
-      print('Google sign-in error: $e');
+      print('LoginController: Google Sign-In Error = $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Google sign-in failed: $e'),
+          content: Text('Google sign-in failed: ${e.toString()}'),
           backgroundColor: Colors.red,
         ),
       );
-      return {'success': false, 'message': e.toString()};
     } finally {
       setLoading(false);
-    }
-  }
-
-  // 🔑 Shared backend call for login/register
-  Future<Map<String, dynamic>> _sendToBackend(
-    String idToken,
-    User firebaseUser,
-  ) async {
-    try {
-      final response = await http.post(
-        Uri.parse(
-          'https://online-store-api-ashy.vercel.app/api/users/google-auth',
-        ),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'idToken': idToken,
-          'userData': {
-            'uid': firebaseUser.uid,
-            'email': firebaseUser.email,
-            'displayName': firebaseUser.displayName,
-            'photoURL': firebaseUser.photoURL,
-          },
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception('Backend request failed: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Backend communication failed: $e');
     }
   }
 }
