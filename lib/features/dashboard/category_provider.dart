@@ -16,17 +16,17 @@ class CategoryProvider extends ChangeNotifier {
   Future<void> fetchCategories() async {
     try {
       _isLoading = true;
-      _errorMessage = null; // Reset error message
-      notifyListeners(); // Notify that loading has started
+      _errorMessage = null;
+      notifyListeners();
 
       _categories = await _controller.fetchCategories();
 
       _isLoading = false;
-      notifyListeners(); // Notify that data is ready
+      notifyListeners();
     } catch (e) {
       _isLoading = false;
       _errorMessage = 'Failed to load categories: $e';
-      notifyListeners(); // Notify on error
+      notifyListeners();
       print('Error fetching categories: $e');
     }
   }

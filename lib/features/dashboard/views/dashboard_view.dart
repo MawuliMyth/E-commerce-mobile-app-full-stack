@@ -18,7 +18,6 @@ class _DashboardViewState extends State<DashboardView> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
       backgroundColor: Color.fromRGBO(255, 255, 255, 1),
       body: SafeArea(
@@ -43,7 +42,6 @@ class _DashboardViewState extends State<DashboardView> {
               SizedBox(height: 20),
               PosterCarousel(),
               SizedBox(height: 20),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -54,7 +52,6 @@ class _DashboardViewState extends State<DashboardView> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-
                   Row(
                     children: [
                       Text(
@@ -86,7 +83,6 @@ class _DashboardViewState extends State<DashboardView> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-
                   Row(
                     children: [
                       Text(
@@ -105,6 +101,8 @@ class _DashboardViewState extends State<DashboardView> {
                   ),
                 ],
               ),
+              SizedBox(height: 10),
+
             ],
           ),
         ),
