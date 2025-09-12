@@ -1,5 +1,5 @@
-import 'package:ecommerce_firebase/features/auth/models/auth_model.dart';
 import 'package:flutter/material.dart';
+import 'package:ecommerce_firebase/features/auth/models/auth_model.dart';
 
 class AuthProvider extends ChangeNotifier {
   AuthModel? _user;
@@ -8,9 +8,7 @@ class AuthProvider extends ChangeNotifier {
 
   void setUser(AuthModel user) {
     _user = user;
-    print(
-      'AuthProvider: User set with fullname=${user.fullname}, userId=${user.userId}',
-    );
+    print('AuthProvider: User set with fullname=${user.fullname}, userId=${user.userId}');
     notifyListeners();
   }
 

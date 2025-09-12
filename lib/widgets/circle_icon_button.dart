@@ -11,7 +11,7 @@ class CircleIconButton extends StatelessWidget {
     super.key,
     required this.icon,
     required this.onPressed,
-    this.size = 30,
+    this.size = 32,
     this.backgroundColor = const Color(0xff004CFF),
     this.iconColor = Colors.white,
   });

@@ -1,31 +1,21 @@
-import 'dart:convert';
-
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
-
+import 'dart:convert';
 import '../models/auth_model.dart';
 
 class AuthController {
   final FlutterSecureStorage _storage = FlutterSecureStorage();
-  final String _refreshTokenUrl =
-      'https://online-store-api-ashy.vercel.app/api/users/refresh-token';
+  final String _refreshTokenUrl = 'https://online-store-api-ashy.vercel.app/api/users/refresh-token';
 
   Future<void> storeTokens(String accessToken, String refreshToken) async {
-    print(
-      'AuthController: Storing tokens - accessToken=$accessToken, refreshToken=$refreshToken',
-    );
+    print('AuthController: Storing tokens - accessToken=$accessToken, refreshToken=$refreshToken');
     await _storage.write(key: 'accessToken', value: accessToken);
     await _storage.write(key: 'refreshToken', value: refreshToken);
   }
 
   Future<void> storeUserData(AuthModel authModel) async {
-    print(
-      'AuthController: Storing user data - fullname=${authModel.fullname}, userId=${authModel.userId}',
-    );
-    await _storage.write(
-      key: 'userData',
-      value: jsonEncode(authModel.toJson()),
-    );
+    print('AuthController: Storing user data - fullname=${authModel.fullname}, userId=${authModel.userId}');
+    await _storage.write(key: 'userData', value: jsonEncode(authModel.toJson()));
   }
 
   Future<AuthModel?> getUserData() async {
@@ -34,9 +24,7 @@ class AuthController {
       try {
         final userData = jsonDecode(userDataJson);
         final authModel = AuthModel.fromJson(userData);
-        print(
-          'AuthController: Retrieved user data - fullname=${authModel.fullname}, userId=${authModel.userId}',
-        );
+        print('AuthController: Retrieved user data - fullname=${authModel.fullname}, userId=${authModel.userId}');
         return authModel;
       } catch (e) {
         print('AuthController: Error parsing user data = $e');
@@ -62,8 +50,7 @@ class AuthController {
   Future<bool> isAuthenticated() async {
     final accessToken = await getAccessToken();
     final userData = await getUserData();
-    bool isAuthenticated =
-        accessToken != null && accessToken.isNotEmpty && userData != null;
+    bool isAuthenticated = accessToken != null && accessToken.isNotEmpty && userData != null;
     print('AuthController: isAuthenticated=$isAuthenticated');
     return isAuthenticated;
   }
@@ -82,9 +69,7 @@ class AuthController {
         body: jsonEncode({'refreshToken': refreshToken}),
       );
 
-      print(
-        'AuthController: Refresh token API Response = ${response.body}, statusCode=${response.statusCode}',
-      );
+      print('AuthController: Refresh token API Response = ${response.body}, statusCode=${response.statusCode}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -94,9 +79,7 @@ class AuthController {
         print('AuthController: Tokens refreshed successfully');
         return true;
       } else {
-        print(
-          'AuthController: Failed to refresh token, statusCode=${response.statusCode}, response=${response.body}',
-        );
+        print('AuthController: Failed to refresh token, statusCode=${response.statusCode}, response=${response.body}');
         return false;
       }
     } catch (e) {
