@@ -155,9 +155,14 @@ class _ProductsScreenState extends State<ProductsScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               children: [
-                Text(
-                  "${widget.categoryName} > ${widget.subcategoryName}",
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text(
+                    "${widget.categoryName} > ${widget.subcategoryName}",
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  ),
                 ),
                 const Spacer(),
                 Text(
@@ -310,7 +315,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                           vertical: 4,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: Colors.black.withOpacity(0.7),
+                                          color: Colors.black,
                                           borderRadius: BorderRadius.circular(
                                             12,
                                           ),
@@ -504,16 +509,14 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                       vertical: 6,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: const Color(
-                                        0xff004CFF,
-                                      ).withOpacity(0.1),
+                                      color: const Color(0xff004CFF),
                                       borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: Text(
-                                      'Available: ${product['quantity'] ?? 0}',
+                                      'items left: ${product['quantity'] ?? 0}',
                                       style: const TextStyle(
+                                        color: Colors.white,
                                         fontSize: 14,
-                                        color: Color(0xff004CFF),
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
@@ -689,8 +692,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                                             vertical: 2,
                                                           ),
                                                       decoration: BoxDecoration(
-                                                        color: Colors.black
-                                                            .withOpacity(0.7),
+                                                        color: Colors.black,
                                                         borderRadius:
                                                             BorderRadius.circular(
                                                               8,
@@ -718,8 +720,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                                             4,
                                                           ),
                                                       decoration: BoxDecoration(
-                                                        color: Colors.white
-                                                            .withOpacity(0.9),
+                                                        color: Colors.white,
                                                         borderRadius:
                                                             BorderRadius.circular(
                                                               6,

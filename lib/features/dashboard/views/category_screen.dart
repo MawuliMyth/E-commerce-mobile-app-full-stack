@@ -124,12 +124,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _refreshCategories,
-          ),
-        ],
+
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -175,7 +170,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                           controller: _searchController,
                           onChanged: (value) => setState(() {}),
                           decoration: const InputDecoration(
-                            hintText: "Search for Subcategories",
+                            hintText: "Search for Categories",
                             hintStyle: TextStyle(
                               color: Colors.grey,
                               fontSize: 16,
@@ -247,7 +242,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                               '${category.subCategories.length}',
                                               style: TextStyle(
                                                 fontSize: 12,
-                                                color: Colors.blue.shade700,
                                                 fontWeight: FontWeight.w600,
                                               ),
                                             ),
@@ -283,35 +277,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                                   ),
                                                 ),
                                               ),
-                                              if (subCat.products.isNotEmpty)
-                                                Container(
-                                                  margin: const EdgeInsets.only(
-                                                    left: 8,
-                                                  ),
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 8,
-                                                        vertical: 2,
-                                                      ),
-                                                  decoration: BoxDecoration(
-                                                    color: const Color(
-                                                      0xff004CFF,
-                                                    ).withOpacity(0.1),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          12,
-                                                        ),
-                                                  ),
-                                                  child: Text(
-                                                    '${subCat.products.length}',
-                                                    style: const TextStyle(
-                                                      fontSize: 12,
-                                                      color: Color(0xff004CFF),
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                    ),
-                                                  ),
-                                                ),
+
                                             ],
                                           ),
                                           trailing: const Icon(

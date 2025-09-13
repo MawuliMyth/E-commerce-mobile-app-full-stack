@@ -106,14 +106,14 @@ class _AllSubcategoriesModalState extends State<AllSubcategoriesModal> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xff004CFF).withOpacity(0.1),
+                            color: const Color(0xff004CFF),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
                             '${widget.subCategories.length}',
                             style: const TextStyle(
                               fontSize: 12,
-                              color: Color(0xff004CFF),
+                              color: Colors.white,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -240,26 +240,26 @@ class _AllSubcategoriesModalState extends State<AllSubcategoriesModal> {
                                 ),
                                 if (productCount > 0) ...[
                                   const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 2,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: const Color(
-                                        0xff004CFF,
-                                      ).withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text(
-                                      '$productCount',
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Color(0xff004CFF),
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
+                                  // Container(
+                                  //   padding: const EdgeInsets.symmetric(
+                                  //     horizontal: 8,
+                                  //     vertical: 2,
+                                  //   ),
+                                  //   decoration: BoxDecoration(
+                                  //     color: const Color(
+                                  //       0xff004CFF,
+                                  //     ),
+                                  //     borderRadius: BorderRadius.circular(12),
+                                  //   ),
+                                  //   child: Text(
+                                  //     '$productCount',
+                                  //     style: const TextStyle(
+                                  //       fontSize: 12,
+                                  //       color: Colors.white,
+                                  //       fontWeight: FontWeight.w600,
+                                  //     ),
+                                  //   ),
+                                  // ),
                                 ],
                               ],
                             ),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:ecommerce_firebase/widgets/searchbar_field.dart';
 
 import '../widgets/category_grid_widget.dart';
+import 'category_screen.dart';
 
 class DashboardView extends StatefulWidget {
   static const String id = 'dashboard_view';
@@ -67,7 +68,14 @@ class _DashboardViewState extends State<DashboardView> {
                       SizedBox(width: 10),
                       CircleIconButton(
                         icon: Icons.arrow_forward,
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const CategoriesScreen(),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
