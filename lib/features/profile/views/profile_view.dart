@@ -1,7 +1,8 @@
+// import 'package:ecommerce_firebase/features/profile/views/category_screen.dart';
 import 'package:flutter/material.dart';
 
 class ProfileView extends StatefulWidget {
-  static String id = 'profile_view';
+  static const String id = 'profile_view';
   const ProfileView({super.key});
 
   @override
@@ -11,7 +12,6 @@ class ProfileView extends StatefulWidget {
 class _ProfileViewState extends State<ProfileView> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(       backgroundColor: Color.fromRGBO(255, 255, 255, 1),
-    );
+    return Scaffold(backgroundColor: Color.fromRGBO(255, 255, 255, 1));
   }
 }

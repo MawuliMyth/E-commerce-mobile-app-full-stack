@@ -7,8 +7,8 @@ import 'package:ecommerce_firebase/features/wishlist/views/wishlist_view.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'features/auth/provider/auth_provider.dart';
 import 'features/auth/controllers/forgot_password_controller.dart';
+import 'features/auth/provider/auth_provider.dart';
 import 'features/auth/views/login_view.dart';
 import 'features/auth/views/register_view.dart';
 import 'features/dashboard/category_provider.dart';
@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  MultiProvider(
+    return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
@@ -51,6 +51,5 @@ class MyApp extends StatelessWidget {
         },
       ),
     );
-
   }
 }
