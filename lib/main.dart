@@ -1,3 +1,4 @@
+import 'package:ecommerce_firebase/Presentation/category_screen.dart';
 import 'package:ecommerce_firebase/Presentation/home_bot_nav.dart';
 import 'package:ecommerce_firebase/Presentation/welcome_screen.dart';
 import 'package:ecommerce_firebase/features/cart/views/cart_view.dart';
@@ -12,6 +13,10 @@ import 'features/auth/provider/auth_provider.dart';
 import 'features/auth/views/login_view.dart';
 import 'features/auth/views/register_view.dart';
 import 'features/dashboard/category_provider.dart';
+import 'features/dashboard/models/product_model.dart';
+import 'features/dashboard/views/category_products_view.dart';
+import 'features/dashboard/views/product_details_view.dart';
+import 'features/dashboard/views/search_view.dart';
 import 'features/profile/views/profile_view.dart';
 
 void main() async {
@@ -48,6 +53,43 @@ class MyApp extends StatelessWidget {
           DashboardView.id: (context) => const DashboardView(),
           WishlistView.id: (context) => const WishlistView(),
           HomeBotnav.id: (context) => const HomeBotnav(),
+          CategoriesScreen.id: (context) => const CategoriesScreen(),
+          SearchView.id: (context) => const SearchView(),
+          CategoryProductsScreen.id: (context) {
+            final args =
+                ModalRoute.of(context)!.settings.arguments
+                    as Map<String, dynamic>?;
+            if (args == null ||
+                !args.containsKey('categoryId') ||
+                !args.containsKey('categoryName')) {
+              return Scaffold(
+                body: Center(
+                  child: Text(
+                    'Error: Missing category arguments',
+                    style: TextStyle(fontSize: 18, color: Colors.red),
+                  ),
+                ),
+              );
+            }
+            return CategoryProductsScreen(
+              categoryId: args['categoryId'] as String,
+              categoryName: args['categoryName'] as String,
+            );
+          },
+          ProductDetailsScreen.id: (context) {
+            final args = ModalRoute.of(context)!.settings.arguments;
+            if (args == null || args is! Product) {
+              return Scaffold(
+                body: Center(
+                  child: Text(
+                    'Error: Missing or invalid product argument',
+                    style: TextStyle(fontSize: 18, color: Colors.red),
+                  ),
+                ),
+              );
+            }
+            return ProductDetailsScreen(product: args);
+          },
         },
       ),
     );

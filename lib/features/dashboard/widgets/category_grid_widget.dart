@@ -1,8 +1,10 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../category_provider.dart';
 import '../models/category_model.dart';
+import '../models/product_model.dart';
 
 class CategoriesView extends StatefulWidget {
   static const String id = 'categories_view';
@@ -16,7 +18,6 @@ class _CategoriesViewState extends State<CategoriesView> {
   @override
   void initState() {
     super.initState();
-    // Defer fetchCategories until after the build phase
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<CategoryProvider>(context, listen: false).fetchCategories();
     });
@@ -26,28 +27,21 @@ class _CategoriesViewState extends State<CategoriesView> {
   Widget build(BuildContext context) {
     return Consumer<CategoryProvider>(
       builder: (context, provider, child) {
+        // Show loading spinner first—const for perf
         if (provider.isLoading) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final categories = provider.categories;
-
-        if (categories.isEmpty) {
-          return const Center(
-            child: Text("No categories found"),
+        // New: Handle errors explicitly in UI
+        if (provider.errorMessage != null) {
+          return Center(
+            child: Text(provider.errorMessage!),
           );
         }
 
-        // Filter categories with valid products
-        final validCategories = categories.where((category) {
-          final subCategory = category.subCategories.firstWhere(
-                (sub) => sub.products.isNotEmpty,
-            orElse: () => SubCategory(id: '', name: '', products: []),
-          );
-          return subCategory.products.isNotEmpty;
-        }).toList();
+        final categories = provider.validCategories;
 
-        if (validCategories.isEmpty) {
+        if (categories.isEmpty) {
           return const Center(
             child: Text("No categories with products found"),
           );
@@ -63,9 +57,9 @@ class _CategoriesViewState extends State<CategoriesView> {
               crossAxisSpacing: 12,
               childAspectRatio: 0.75,
             ),
-            itemCount: validCategories.length,
+            itemCount: categories.length,
             itemBuilder: (context, index) {
-              return buildCategoryCard(validCategories[index]);
+              return buildCategoryCard(categories[index]);
             },
           ),
         );
@@ -73,7 +67,6 @@ class _CategoriesViewState extends State<CategoriesView> {
     );
   }
 
-  // Rest of the buildCategoryCard method remains unchanged
   Widget buildCategoryCard(Category category) {
     final subCategory = category.subCategories.firstWhere(
           (sub) => sub.products.isNotEmpty,
@@ -88,7 +81,7 @@ class _CategoriesViewState extends State<CategoriesView> {
 
     Map<String, List<Product>> productsByBrand = {};
     for (var product in allProducts) {
-      final brandName = "Brand"; // Consider using actual brand data if available
+      final brandName = "Brand"; //
       productsByBrand.putIfAbsent(brandName, () => []).add(product);
     }
 

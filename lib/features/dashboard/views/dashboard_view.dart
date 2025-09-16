@@ -1,10 +1,11 @@
+import 'package:ecommerce_firebase/features/dashboard/views/search_view.dart';
 import 'package:ecommerce_firebase/features/dashboard/widgets/poster_widget.dart';
 import 'package:ecommerce_firebase/widgets/circle_icon_button.dart';
 import 'package:flutter/material.dart';
 import 'package:ecommerce_firebase/widgets/searchbar_field.dart';
 
+import '../../../Presentation/category_screen.dart';
 import '../widgets/category_grid_widget.dart';
-import 'category_screen.dart';
 
 class DashboardView extends StatefulWidget {
   static const String id = 'dashboard_view';
@@ -21,12 +22,13 @@ class _DashboardViewState extends State<DashboardView> {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: Color.fromRGBO(255, 255, 255, 1),
+      backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
           child: Column(
             children: [
+              // Header Row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -38,13 +40,23 @@ class _DashboardViewState extends State<DashboardView> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(width: screenWidth * 0.6, child: SearchbarField()),
+                  SizedBox(
+                    width: screenWidth * 0.6,
+                    child: SearchbarField(
+                      onTap: () {
+                        Navigator.pushNamed(context, SearchView.id);
+                      },
+                    ),
+                  ),
                 ],
               ),
-              SizedBox(height: 20),
-              PosterCarousel(),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
+              // Poster carousel
+              const PosterCarousel(),
+              const SizedBox(height: 20),
+
+              // Categories header
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -55,7 +67,6 @@ class _DashboardViewState extends State<DashboardView> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-
                   Row(
                     children: [
                       Text(
@@ -65,25 +76,25 @@ class _DashboardViewState extends State<DashboardView> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       CircleIconButton(
                         icon: Icons.arrow_forward,
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const CategoriesScreen(),
-                            ),
-                          );
+                          Navigator.pushNamed(context, CategoriesScreen.id);
                         },
                       ),
                     ],
                   ),
                 ],
               ),
-              SizedBox(height: 10),
-              Expanded(child: CategoriesView()),
-              SizedBox(height: 20),
+              const SizedBox(height: 10),
+
+              // Category grid
+              const Expanded(child: CategoriesView()),
+
+              const SizedBox(height: 20),
+
+              // Flash Sale header
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -94,7 +105,6 @@ class _DashboardViewState extends State<DashboardView> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-
                   Row(
                     children: [
                       Text(
@@ -104,10 +114,12 @@ class _DashboardViewState extends State<DashboardView> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       CircleIconButton(
                         icon: Icons.arrow_forward,
-                        onPressed: () {},
+                        onPressed: () {
+                          // TODO: Navigate to Flash Sale screen
+                        },
                       ),
                     ],
                   ),
