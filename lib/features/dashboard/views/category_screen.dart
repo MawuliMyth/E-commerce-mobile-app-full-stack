@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:ecommerce_firebase/features/dashboard/views/product_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../controllers/category_controller.dart';
 import '../models/category_model.dart';
@@ -17,6 +20,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   bool isLoading = true;
   final TextEditingController _searchController = TextEditingController();
   final CategoryController _categoryController = CategoryController();
+  int? _lastFetchTime; // State variable to store the last fetch time
+
+  // Cache duration - set to 5 minutes
+  static const Duration _cacheDuration = Duration(minutes: 5);
 
   @override
   void initState() {
@@ -30,13 +37,47 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     super.dispose();
   }
 
-  Future<void> _loadCategories() async {
+  Future<void> _loadCategories({bool forceRefresh = false}) async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedData = prefs.getString('cached_categories');
+      final cachedTime = prefs.getInt('last_fetch_time');
+
+      // Check if we have cached data and it's still valid
+      if (!forceRefresh &&
+          cachedData != null &&
+          cachedTime != null &&
+          DateTime.now().difference(
+                DateTime.fromMillisecondsSinceEpoch(cachedTime),
+              ) <
+              _cacheDuration) {
+        final List<dynamic> decodedData = jsonDecode(cachedData);
+        setState(() {
+          categories = decodedData
+              .map((json) => Category.fromJson(json))
+              .toList();
+          isLoading = false;
+          _lastFetchTime = cachedTime; // Update last fetch time from cache
+        });
+        return;
+      }
+
+      // Fetch fresh data
       final fetchedCategories = await _categoryController.fetchCategories();
+
       setState(() {
         categories = fetchedCategories;
         isLoading = false;
+        _lastFetchTime =
+            DateTime.now().millisecondsSinceEpoch; // Update last fetch time
       });
+
+      // Update cache
+      await prefs.setString(
+        'cached_categories',
+        jsonEncode(fetchedCategories.map((cat) => cat.toJson()).toList()),
+      );
+      await prefs.setInt('last_fetch_time', _lastFetchTime!);
     } catch (e) {
       setState(() {
         isLoading = false;
@@ -93,7 +134,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     setState(() {
       isLoading = true;
     });
-    await _loadCategories();
+    await _loadCategories(forceRefresh: true);
+  }
+
+  // Method to clear cache (useful for logout or data invalidation)
+  static Future<void> clearCache() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('cached_categories');
+    await prefs.remove('last_fetch_time');
   }
 
   @override
@@ -159,9 +207,55 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           : RefreshIndicator(
               onRefresh: _refreshCategories,
               child: SingleChildScrollView(
-                physics: BouncingScrollPhysics(),
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
                 child: Column(
                   children: [
+                    // Cache indicator (shows when using cached data)
+                    if (_lastFetchTime != null)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 4,
+                        ),
+                        color: Colors.blue.shade50,
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.cached,
+                              size: 16,
+                              color: Colors.blue.shade600,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Last updated: ${DateTime.fromMillisecondsSinceEpoch(_lastFetchTime!).difference(DateTime.now()).inMinutes.abs() < 1 ? 'Just now' : '${DateTime.fromMillisecondsSinceEpoch(_lastFetchTime!).difference(DateTime.now()).inMinutes.abs()}m ago'}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.blue.shade600,
+                              ),
+                            ),
+                            const Spacer(),
+                            TextButton(
+                              onPressed: _refreshCategories,
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: const Size(0, 0),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: Text(
+                                'Refresh',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.blue.shade600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
                     // Search Bar
                     Container(
                       color: Colors.white,

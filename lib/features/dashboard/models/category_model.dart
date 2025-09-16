@@ -28,6 +28,17 @@ class Product {
           .toList(),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "_id": id,
+      "name": name,
+      "description": description,
+      "quantity": quantity,
+      "price": price,
+      "images": images.map((url) => {"url": url}).toList(),
+    };
+  }
 }
 
 class SubCategory {
@@ -35,11 +46,7 @@ class SubCategory {
   final String name;
   final List<Product> products;
 
-  SubCategory({
-    required this.id,
-    required this.name,
-    required this.products,
-  });
+  SubCategory({required this.id, required this.name, required this.products});
 
   factory SubCategory.fromJson(Map<String, dynamic> json) {
     return SubCategory(
@@ -49,6 +56,14 @@ class SubCategory {
           .map((p) => Product.fromJson(p))
           .toList(),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "_id": id,
+      "name": name,
+      "products": products.map((p) => p.toJson()).toList(),
+    };
   }
 }
 
@@ -74,6 +89,15 @@ class Category {
           .map((s) => SubCategory.fromJson(s))
           .toList(),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "_id": id,
+      "name": name,
+      "image": image,
+      "subCategories": subCategories.map((s) => s.toJson()).toList(),
+    };
   }
 
   // Method to calculate total number of products

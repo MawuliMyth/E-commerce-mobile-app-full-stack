@@ -22,7 +22,7 @@ class _DashboardViewState extends State<DashboardView> {
 
     return Scaffold(
       backgroundColor: Color.fromRGBO(255, 255, 255, 1),
-      body: InkWell(
+      body: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
         },
