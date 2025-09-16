@@ -1,35 +1,6 @@
-class Product {
-  final String id;
-  final String name;
-  final String description;
-  final int quantity;
-  final double price;
-  final List<String> images;
+import 'package:ecommerce_firebase/features/dashboard/models/product_model.dart';
 
-  Product({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.quantity,
-    required this.price,
-    required this.images,
-  });
-
-  factory Product.fromJson(Map<String, dynamic> json) {
-    return Product(
-      id: json["_id"],
-      name: json["name"],
-      description: json["description"],
-      quantity: json["quantity"],
-      price: (json["price"] as num).toDouble(),
-      images: (json["images"] as List)
-          .map((img) => img["url"] as String? ?? "")
-          .where((url) => url.isNotEmpty)
-          .toList(),
-    );
-  }
-}
-
+// Models for category and subcategory data from the Category API
 class SubCategory {
   final String id;
   final String name;
@@ -46,7 +17,7 @@ class SubCategory {
       id: json["_id"],
       name: json["name"],
       products: (json["products"] as List)
-          .map((p) => Product.fromJson(p))
+          .map((p) => Product.fromJsonCategory(p))
           .toList(),
     );
   }
@@ -76,7 +47,7 @@ class Category {
     );
   }
 
-  // Method to calculate total number of products
+  // Calculates total number of products in all subcategories
   int get totalProducts {
     return subCategories
         .map((subCategory) => subCategory.products.length)
