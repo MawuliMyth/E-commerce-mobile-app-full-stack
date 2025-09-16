@@ -1,69 +1,25 @@
-class Product {
-  final String id;
-  final String name;
-  final String description;
-  final int quantity;
-  final double price;
-  final List<String> images;
+import 'package:ecommerce_firebase/features/dashboard/models/product_model.dart';
 
-  Product({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.quantity,
-    required this.price,
-    required this.images,
-  });
-
-  factory Product.fromJson(Map<String, dynamic> json) {
-    return Product(
-      id: json["_id"],
-      name: json["name"],
-      description: json["description"],
-      quantity: json["quantity"],
-      price: (json["price"] as num).toDouble(),
-      images: (json["images"] as List)
-          .map((img) => img["url"] as String? ?? "")
-          .where((url) => url.isNotEmpty)
-          .toList(),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      "_id": id,
-      "name": name,
-      "description": description,
-      "quantity": quantity,
-      "price": price,
-      "images": images.map((url) => {"url": url}).toList(),
-    };
-  }
-}
-
+// Models for category and subcategory data from the Category API
 class SubCategory {
   final String id;
   final String name;
   final List<Product> products;
 
-  SubCategory({required this.id, required this.name, required this.products});
+  SubCategory({
+    required this.id,
+    required this.name,
+    required this.products,
+  });
 
   factory SubCategory.fromJson(Map<String, dynamic> json) {
     return SubCategory(
       id: json["_id"],
       name: json["name"],
       products: (json["products"] as List)
-          .map((p) => Product.fromJson(p))
+          .map((p) => Product.fromJsonCategory(p))
           .toList(),
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      "_id": id,
-      "name": name,
-      "products": products.map((p) => p.toJson()).toList(),
-    };
   }
 }
 
@@ -91,16 +47,7 @@ class Category {
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      "_id": id,
-      "name": name,
-      "image": image,
-      "subCategories": subCategories.map((s) => s.toJson()).toList(),
-    };
-  }
-
-  // Method to calculate total number of products
+  // Calculates total number of products in all subcategories
   int get totalProducts {
     return subCategories
         .map((subCategory) => subCategory.products.length)

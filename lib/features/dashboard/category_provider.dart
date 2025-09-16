@@ -1,33 +1,41 @@
 import 'package:flutter/material.dart';
+
 import 'controllers/category_controller.dart';
 import 'models/category_model.dart';
 
 class CategoryProvider extends ChangeNotifier {
   final CategoryController _controller = CategoryController();
 
-  bool _isLoading = false;
-  List<Category> _categories = [];
-  String? _errorMessage;
+  bool isLoading = false;
+  List<Category> categories = [];
+  List<Category> _validCategories = []; // Cached filtered list
+  String? errorMessage; // New: For UI-friendly error display
 
-  bool get isLoading => _isLoading;
-  List<Category> get categories => _categories;
-  String? get errorMessage => _errorMessage;
+  // Getter for filtered categories—computed once in fetch
+  List<Category> get validCategories => _validCategories;
 
   Future<void> fetchCategories() async {
+    isLoading = true;
+    errorMessage = null; // Reset on each call
+    notifyListeners(); // Safe here, as we'll call this post-build
+
     try {
-      _isLoading = true;
-      _errorMessage = null; // Reset error message
-      notifyListeners(); // Notify that loading has started
-
-      _categories = await _controller.fetchCategories();
-
-      _isLoading = false;
-      notifyListeners(); // Notify that data is ready
+      categories = await _controller.fetchCategories();
+      // Filter once here: Only categories with at least one non-empty subCategory.products
+      _validCategories = categories.where((category) {
+        final subCategory = category.subCategories.firstWhere(
+          (sub) => sub.products.isNotEmpty,
+          orElse: () => SubCategory(id: '', name: '', products: []),
+        );
+        return subCategory.products.isNotEmpty;
+      }).toList();
     } catch (e) {
-      _isLoading = false;
-      _errorMessage = 'Failed to load categories: $e';
-      notifyListeners(); // Notify on error
-      print('Error fetching categories: $e');
+      errorMessage = "Failed to fetch categories: $e"; // Expose error to UI
+      print(errorMessage); // Keep for debugging
+      _validCategories = []; // Clear on error
     }
+
+    isLoading = false;
+    notifyListeners(); // Triggers UI rebuild safely
   }
 }
