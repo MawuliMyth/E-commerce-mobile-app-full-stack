@@ -8,6 +8,7 @@ import 'package:ecommerce_firebase/features/wishlist/views/wishlist_view.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'features/auth/controllers/forgot_password_controller.dart';
 import 'features/auth/provider/auth_provider.dart';
 import 'features/auth/views/login_view.dart';
@@ -17,6 +18,7 @@ import 'features/dashboard/models/product_model.dart';
 import 'features/dashboard/views/category_products_view.dart';
 import 'features/dashboard/views/product_details_view.dart';
 import 'features/dashboard/views/search_view.dart';
+import 'features/dashboard/views/subcategory_products_view.dart';
 import 'features/profile/views/profile_view.dart';
 
 void main() async {
@@ -55,6 +57,8 @@ class MyApp extends StatelessWidget {
           HomeBotnav.id: (context) => const HomeBotnav(),
           CategoriesScreen.id: (context) => const CategoriesScreen(),
           SearchView.id: (context) => const SearchView(),
+          subcategoryProductsView.id: (context) =>
+              const subcategoryProductsView(),
           CategoryProductsScreen.id: (context) {
             final args =
                 ModalRoute.of(context)!.settings.arguments

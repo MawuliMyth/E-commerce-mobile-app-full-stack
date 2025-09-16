@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../category_provider.dart';
 import '../models/category_model.dart';
 import '../models/product_model.dart';
+import '../views/subcategory_products_view.dart';
 
 class CategoriesView extends StatefulWidget {
   static const String id = 'categories_view';
@@ -45,6 +46,7 @@ class _CategoriesViewState extends State<CategoriesView> {
         }
 
         return SingleChildScrollView(
+          physics: BouncingScrollPhysics(),
           child: GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -78,7 +80,7 @@ class _CategoriesViewState extends State<CategoriesView> {
 
     Map<String, List<Product>> productsByBrand = {};
     for (var product in allProducts) {
-      final brandName = "Brand"; //
+      final brandName = "Brand";
       productsByBrand.putIfAbsent(brandName, () => []).add(product);
     }
 
@@ -105,79 +107,101 @@ class _CategoriesViewState extends State<CategoriesView> {
       }
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 3,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 4,
-                  mainAxisSpacing: 4,
+    return GestureDetector(
+      onTap: () {
+        // Navigate to category products view
+        Navigator.pushNamed(
+          context,
+          subcategoryProductsView.id, // You'll need to define this route
+          arguments: {
+            'category': category,
+            'products': _getAllProductsInCategory(category),
+          },
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 3,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 4,
+                    mainAxisSpacing: 4,
+                  ),
+                  itemCount: selectedImages.length.clamp(0, 4),
+                  itemBuilder: (context, index) {
+                    final img = selectedImages[index].isNotEmpty
+                        ? selectedImages[index]
+                        : "https://via.placeholder.com/150";
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(img, fit: BoxFit.cover),
+                    );
+                  },
                 ),
-                itemCount: selectedImages.length.clamp(0, 4),
-                itemBuilder: (context, index) {
-                  final img = selectedImages[index].isNotEmpty
-                      ? selectedImages[index]
-                      : "https://via.placeholder.com/150";
-                  return ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(img, fit: BoxFit.cover),
-                  );
-                },
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  category.name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    color: const Color(0xffDFE9FF),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 25,
-                      vertical: 10,
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    category.name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
-                    child: Text(
-                      "${category.totalProducts}",
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: const Color(0xffDFE9FF),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 25,
+                        vertical: 10,
+                      ),
+                      child: Text(
+                        "${category.totalProducts}",
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
+  }
+
+  // Helper method to get all products in a category
+  List<Product> _getAllProductsInCategory(Category category) {
+    List<Product> allProducts = [];
+    for (var subCategory in category.subCategories) {
+      allProducts.addAll(subCategory.products);
+    }
+    return allProducts;
   }
 }

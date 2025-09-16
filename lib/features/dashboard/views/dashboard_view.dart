@@ -1,11 +1,14 @@
+import 'package:ecommerce_firebase/features/dashboard/views/search_view.dart';
 import 'package:ecommerce_firebase/features/dashboard/widgets/poster_widget.dart';
 import 'package:ecommerce_firebase/widgets/circle_icon_button.dart';
 import 'package:ecommerce_firebase/widgets/searchbar_field.dart';
 import 'package:flutter/material.dart';
 
-import '../widgets/category_grid_widgettends StatefulWidget {
+import '../../../Presentation/category_screen.dart';
+import '../widgets/category_grid_widget.dart';
 
-import 'dashboard_view.dart' as SearchView;static const String id = 'dashboard_view';
+class DashboardView extends StatefulWidget {
+  static const String id = 'dashboard_view';
 
   const DashboardView({super.key});
 
