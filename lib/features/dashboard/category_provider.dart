@@ -24,7 +24,7 @@ class CategoryProvider extends ChangeNotifier {
       // Filter once here: Only categories with at least one non-empty subCategory.products
       _validCategories = categories.where((category) {
         final subCategory = category.subCategories.firstWhere(
-              (sub) => sub.products.isNotEmpty,
+          (sub) => sub.products.isNotEmpty,
           orElse: () => SubCategory(id: '', name: '', products: []),
         );
         return subCategory.products.isNotEmpty;

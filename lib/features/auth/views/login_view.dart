@@ -1,5 +1,6 @@
 import 'package:ecommerce_firebase/Presentation/home_bot_nav.dart';
 import 'package:flutter/material.dart';
+
 import '../controllers/forgot_password_controller.dart';
 import '../controllers/login_controller.dart';
 
@@ -243,7 +244,9 @@ class _LoginViewState extends State<LoginView> {
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                           color: Colors.grey[400],
                         ),
                         onPressed: () {
@@ -268,34 +271,43 @@ class _LoginViewState extends State<LoginView> {
                       onPressed: _isLoading
                           ? null
                           : () async {
-                        if (_phoneNumberController.text.isEmpty || _passwordController.text.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Please fill in all fields'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                          return;
-                        }
-                        if (_passwordController.text.length < 6) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Password must be at least 6 characters'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                          return;
-                        }
-                        await _loginController.handleEmailPasswordLogin(
-                          phone: _selectedCountryCode + _phoneNumberController.text,
-                          password: _passwordController.text,
-                          context: context,
-                          setLoading: (isLoading) => setState(() => _isLoading = isLoading),
-                          onSuccess: () {
-                             Navigator.pushReplacementNamed(context, HomeBotnav.id);
-                          },
-                        );
-                      },
+                              if (_phoneNumberController.text.isEmpty ||
+                                  _passwordController.text.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Please fill in all fields'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return;
+                              }
+                              if (_passwordController.text.length < 6) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Password must be at least 6 characters',
+                                    ),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return;
+                              }
+                              await _loginController.handleEmailPasswordLogin(
+                                phone:
+                                    _selectedCountryCode +
+                                    _phoneNumberController.text,
+                                password: _passwordController.text,
+                                context: context,
+                                setLoading: (isLoading) =>
+                                    setState(() => _isLoading = isLoading),
+                                onSuccess: () {
+                                  Navigator.pushReplacementNamed(
+                                    context,
+                                    HomeBotnav.id,
+                                  );
+                                },
+                              );
+                            },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xff004CFF),
                         padding: const EdgeInsets.symmetric(vertical: 18),
@@ -340,7 +352,7 @@ class _LoginViewState extends State<LoginView> {
       context: context,
       setLoading: (isLoading) => setState(() => _isLoading = isLoading),
       onSuccess: () {
-         Navigator.pushReplacementNamed(context,  HomeBotnav.id);
+        Navigator.pushReplacementNamed(context, HomeBotnav.id);
       },
     );
   }

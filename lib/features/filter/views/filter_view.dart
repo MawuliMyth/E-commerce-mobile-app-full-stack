@@ -12,6 +12,8 @@ class FilterView extends StatefulWidget {
 class _FilterViewState extends State<FilterView> {
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(backgroundColor: Color.fromRGBO(255, 255, 255, 1));
+    return  Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+    );
   }
 }

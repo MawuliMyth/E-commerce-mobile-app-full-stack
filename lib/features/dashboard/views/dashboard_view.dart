@@ -1,10 +1,12 @@
 import 'package:ecommerce_firebase/features/dashboard/views/search_view.dart';
 import 'package:ecommerce_firebase/features/dashboard/widgets/poster_widget.dart';
 import 'package:ecommerce_firebase/widgets/circle_icon_button.dart';
-import 'package:flutter/material.dart';
 import 'package:ecommerce_firebase/widgets/searchbar_field.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../Presentation/category_screen.dart';
+import '../../../theme/theme_controller.dart';
 import '../widgets/category_grid_widget.dart';
 
 class DashboardView extends StatefulWidget {
@@ -19,10 +21,13 @@ class DashboardView extends StatefulWidget {
 class _DashboardViewState extends State<DashboardView> {
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
@@ -30,7 +35,7 @@ class _DashboardViewState extends State<DashboardView> {
             children: [
               // Header Row
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
@@ -41,12 +46,18 @@ class _DashboardViewState extends State<DashboardView> {
                     ),
                   ),
                   SizedBox(
-                    width: screenWidth * 0.6,
+                    width: screenWidth * 0.5,
                     child: SearchbarField(
                       onTap: () {
                         Navigator.pushNamed(context, SearchView.id);
                       },
                     ),
+                  ),
+                  Switch.adaptive(
+                    value: themeProvider.isDarkMode,
+                    onChanged: (value) {
+                      themeProvider.toggleTheme(value);
+                    },
                   ),
                 ],
               ),

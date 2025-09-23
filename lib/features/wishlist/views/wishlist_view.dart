@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+
 class WishlistView extends StatefulWidget {
   static String id = 'wishlist_view';
 
@@ -12,6 +13,11 @@ class WishlistView extends StatefulWidget {
 class _WishlistViewState extends State<WishlistView> {
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(backgroundColor: Color.fromRGBO(255, 255, 255, 1));
+
+    return  Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+
+
+    );
   }
 }

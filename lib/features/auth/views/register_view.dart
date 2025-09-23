@@ -223,7 +223,9 @@ class _RegisterViewState extends State<RegisterView> {
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                           color: Colors.grey[400],
                         ),
                         onPressed: () {
@@ -319,48 +321,57 @@ class _RegisterViewState extends State<RegisterView> {
                       onPressed: _isLoading
                           ? null
                           : () async {
-                        if (_fullNameController.text.isEmpty ||
-                            _emailController.text.isEmpty ||
-                            _passwordController.text.isEmpty ||
-                            _phoneNumberController.text.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Please fill in all fields'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                          return;
-                        }
-                        if (!_emailController.text.contains('@')) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Please enter a valid email'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                          return;
-                        }
-                        if (_passwordController.text.length < 6) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Password must be at least 6 characters'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                          return;
-                        }
-                        await _registerController.handleEmailPasswordRegistration(
-                          email: _emailController.text,
-                          password: _passwordController.text,
-                          fullName: _fullNameController.text,
-                          phone: _selectedCountryCode + _phoneNumberController.text,
-                          context: context,
-                          setLoading: (isLoading) => setState(() => _isLoading = isLoading),
-                          onSuccess: () {
-                             Navigator.pushReplacementNamed(context, HomeBotnav.id);
-                          },
-                        );
-                      },
+                              if (_fullNameController.text.isEmpty ||
+                                  _emailController.text.isEmpty ||
+                                  _passwordController.text.isEmpty ||
+                                  _phoneNumberController.text.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Please fill in all fields'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return;
+                              }
+                              if (!_emailController.text.contains('@')) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Please enter a valid email'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return;
+                              }
+                              if (_passwordController.text.length < 6) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Password must be at least 6 characters',
+                                    ),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                return;
+                              }
+                              await _registerController
+                                  .handleEmailPasswordRegistration(
+                                    email: _emailController.text,
+                                    password: _passwordController.text,
+                                    fullName: _fullNameController.text,
+                                    phone:
+                                        _selectedCountryCode +
+                                        _phoneNumberController.text,
+                                    context: context,
+                                    setLoading: (isLoading) =>
+                                        setState(() => _isLoading = isLoading),
+                                    onSuccess: () {
+                                      Navigator.pushReplacementNamed(
+                                        context,
+                                        HomeBotnav.id,
+                                      );
+                                    },
+                                  );
+                            },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xff004CFF),
                         padding: const EdgeInsets.symmetric(vertical: 18),
@@ -403,7 +414,7 @@ class _RegisterViewState extends State<RegisterView> {
       context: context,
       setLoading: (isLoading) => setState(() => _isLoading = isLoading),
       onSuccess: () {
-         Navigator.pushReplacementNamed(context,  HomeBotnav.id);
+        Navigator.pushReplacementNamed(context, HomeBotnav.id);
       },
     );
   }

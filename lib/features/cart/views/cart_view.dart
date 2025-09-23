@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-
 class CartView extends StatefulWidget {
-   static String id = 'cart_view';
+  static String id = 'cart_view';
+
   const CartView({super.key});
 
   @override
@@ -12,9 +12,6 @@ class CartView extends StatefulWidget {
 class _CartViewState extends State<CartView> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color.fromRGBO(255, 255, 255, 1),
-
-    );
+    return Scaffold(backgroundColor: Theme.of(context).scaffoldBackgroundColor);
   }
 }
