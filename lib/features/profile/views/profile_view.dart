@@ -12,6 +12,7 @@ class ProfileView extends StatefulWidget {
 class _ProfileViewState extends State<ProfileView> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(backgroundColor: Color.fromRGBO(255, 255, 255, 1));
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,    );
   }
 }

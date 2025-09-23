@@ -46,7 +46,7 @@ class _CategoriesViewState extends State<CategoriesView> {
         }
 
         return SingleChildScrollView(
-          physics: BouncingScrollPhysics(),
+          physics:ScrollPhysics() ,
           child: GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),

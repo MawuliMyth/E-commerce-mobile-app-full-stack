@@ -5,6 +5,8 @@ import 'package:ecommerce_firebase/features/cart/views/cart_view.dart';
 import 'package:ecommerce_firebase/features/dashboard/views/dashboard_view.dart';
 import 'package:ecommerce_firebase/features/filter/views/filter_view.dart';
 import 'package:ecommerce_firebase/features/wishlist/views/wishlist_view.dart';
+import 'package:ecommerce_firebase/theme/app_theme.dart';
+import 'package:ecommerce_firebase/theme/theme_controller.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -38,62 +40,69 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
       ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        initialRoute: WelcomeScreen.id,
-        routes: {
-          WelcomeScreen.id: (context) => const WelcomeScreen(),
-          LoginView.id: (context) => const LoginView(),
-          RegisterView.id: (context) => const RegisterView(),
-          ForgotPasswordView.id: (context) => const ForgotPasswordView(),
-          ProfileView.id: (context) => const ProfileView(),
-          CartView.id: (context) => const CartView(),
-          FilterView.id: (context) => const FilterView(),
-          DashboardView.id: (context) => const DashboardView(),
-          WishlistView.id: (context) => const WishlistView(),
-          HomeBotnav.id: (context) => const HomeBotnav(),
-          CategoriesScreen.id: (context) => const CategoriesScreen(),
-          SearchView.id: (context) => const SearchView(),
-          subcategoryProductsView.id: (context) =>
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeProvider.themeMode, // <-- Use the provider's current themeMode
+            initialRoute: WelcomeScreen.id,
+            routes: {
+              WelcomeScreen.id: (context) => const WelcomeScreen(),
+              LoginView.id: (context) => const LoginView(),
+              RegisterView.id: (context) => const RegisterView(),
+              ForgotPasswordView.id: (context) => const ForgotPasswordView(),
+              ProfileView.id: (context) => const ProfileView(),
+              CartView.id: (context) => const CartView(),
+              FilterView.id: (context) => const FilterView(),
+              DashboardView.id: (context) => const DashboardView(),
+              WishlistView.id: (context) => const WishlistView(),
+              HomeBotnav.id: (context) => const HomeBotnav(),
+              CategoriesScreen.id: (context) => const CategoriesScreen(),
+              SearchView.id: (context) => const SearchView(),
+              subcategoryProductsView.id: (context) =>
               const subcategoryProductsView(),
-          CategoryProductsScreen.id: (context) {
-            final args =
-                ModalRoute.of(context)!.settings.arguments
-                    as Map<String, dynamic>?;
-            if (args == null ||
-                !args.containsKey('categoryId') ||
-                !args.containsKey('categoryName')) {
-              return Scaffold(
-                body: Center(
-                  child: Text(
-                    'Error: Missing category arguments',
-                    style: TextStyle(fontSize: 18, color: Colors.red),
-                  ),
-                ),
-              );
-            }
-            return CategoryProductsScreen(
-              categoryId: args['categoryId'] as String,
-              categoryName: args['categoryName'] as String,
-            );
-          },
-          ProductDetailsScreen.id: (context) {
-            final args = ModalRoute.of(context)!.settings.arguments;
-            if (args == null || args is! Product) {
-              return Scaffold(
-                body: Center(
-                  child: Text(
-                    'Error: Missing or invalid product argument',
-                    style: TextStyle(fontSize: 18, color: Colors.red),
-                  ),
-                ),
-              );
-            }
-            return ProductDetailsScreen(product: args);
-          },
+              CategoryProductsScreen.id: (context) {
+                final args =
+                ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+                if (args == null ||
+                    !args.containsKey('categoryId') ||
+                    !args.containsKey('categoryName')) {
+                  return const Scaffold(
+                    body: Center(
+                      child: Text(
+                        'Error: Missing category arguments',
+                        style: TextStyle(fontSize: 18, color: Colors.red),
+                      ),
+                    ),
+                  );
+                }
+                return CategoryProductsScreen(
+                  categoryId: args['categoryId'] as String,
+                  categoryName: args['categoryName'] as String,
+                );
+              },
+              ProductDetailsScreen.id: (context) {
+                final args = ModalRoute.of(context)!.settings.arguments;
+                if (args == null || args is! Product) {
+                  return const Scaffold(
+                    body: Center(
+                      child: Text(
+                        'Error: Missing or invalid product argument',
+                        style: TextStyle(fontSize: 18, color: Colors.red),
+                      ),
+                    ),
+                  );
+                }
+                return ProductDetailsScreen(product: args);
+              },
+            },
+          );
         },
       ),
     );
