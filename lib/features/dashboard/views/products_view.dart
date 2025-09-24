@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../theme/theme_controller.dart';
 import '../controllers/category_controller.dart';
 import '../models/product_model.dart';
 import '../widgets/product_card_widget.dart';
@@ -97,15 +99,15 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
-      backgroundColor: Color.fromRGBO(255, 255, 255, 1),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(widget.subcategoryName),
         centerTitle: true,
-        backgroundColor: Color.fromRGBO(255, 255, 255, 1),
-
-        foregroundColor: Colors.black,
-        elevation: 0,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
+        elevation: 1,
         leading: IconButton(
           icon: Container(
             padding: const EdgeInsets.all(8),
@@ -122,7 +124,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
         children: [
           // Search Bar
           Container(
-            color: Colors.white,
+            color: Theme.of(context).scaffoldBackgroundColor,
             padding: const EdgeInsets.all(16),
             child: Container(
               decoration: BoxDecoration(
@@ -148,7 +150,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
           // Breadcrumb
           Container(
-            color: Colors.white,
+            color: Theme.of(context).scaffoldBackgroundColor,
+
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               children: [

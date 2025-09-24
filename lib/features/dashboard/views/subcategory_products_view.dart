@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../../theme/theme_controller.dart';
 import '../models/category_model.dart';
 import '../models/product_model.dart';
 import '../widgets/product_card_widget.dart';
@@ -11,6 +13,8 @@ class subcategoryProductsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     // Get the arguments passed from navigation
     final Map<String, dynamic> args =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
@@ -19,11 +23,12 @@ class subcategoryProductsView extends StatelessWidget {
     final List<Product> products = args['products'] as List<Product>;
 
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(category.name),
         centerTitle: true,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+         foregroundColor:Theme.of(context).appBarTheme.foregroundColor ,
         elevation: 1,
       ),
       body: products.isEmpty

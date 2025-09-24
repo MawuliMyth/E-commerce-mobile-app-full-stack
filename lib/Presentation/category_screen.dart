@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../features/dashboard/controllers/category_controller.dart';
 import '../features/dashboard/models/category_model.dart';
 import '../features/dashboard/views/category_products_view.dart';
 import '../features/dashboard/views/products_view.dart';
+import '../theme/theme_controller.dart';
 
 class CategoriesScreen extends StatefulWidget {
   static const String id = 'categories_screen';
@@ -108,21 +110,19 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        foregroundColor:Theme.of(context).appBarTheme.foregroundColor ,
         title: const Text(
           "Categories",
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
-          ),
+
         ),
         centerTitle: true,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
+        elevation: 1,
         leading: IconButton(
           icon: Container(
             padding: const EdgeInsets.all(8),
@@ -168,7 +168,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
             children: [
               // Search Bar
               Container(
-                color: Colors.white,
+                color: Theme.of(context).scaffoldBackgroundColor,
                 padding: const EdgeInsets.all(16),
                 child: Container(
                   decoration: BoxDecoration(
@@ -215,7 +215,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                         // Category Header
                         Container(
                           width: double.infinity,
-                          color: Colors.grey[200],
+                          color: Theme.of(context).scaffoldBackgroundColor,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 18,
                             vertical: 12,
@@ -244,7 +244,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                         style: const TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.w600,
-                                          color: Colors.black87,
                                         ),
                                       ),
                                     ),
@@ -262,6 +261,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                         child: Text(
                                           '${category.subCategories.length}',
                                           style: const TextStyle(
+                                            color: Colors.blue,
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
                                           ),
@@ -296,7 +296,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                                 subCat.name,
                                                 style: const TextStyle(
                                                   fontSize: 18,
-                                                  color: Colors.black87,
                                                 ),
                                               ),
                                             ),
@@ -304,7 +303,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                                         ),
                                         trailing: const Icon(
                                           Icons.chevron_right,
-                                          color: Colors.grey,
+                                          color: Colors.white,
                                           size: 20,
                                         ),
                                         onTap: () => _navigateToProducts(

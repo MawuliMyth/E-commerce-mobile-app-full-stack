@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../theme/theme_controller.dart';
 
 class CustomBottomBarNav extends StatelessWidget {
   final int currentIndex;
@@ -12,17 +15,20 @@ class CustomBottomBarNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(12),
           topRight: Radius.circular(12),
         ),
-        color: Color.fromRGBO(255, 255, 255, 1),
+          color: Theme.of(context).scaffoldBackgroundColor,
+
       ),
       child: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),

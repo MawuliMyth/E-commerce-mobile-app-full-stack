@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../theme/theme_controller.dart';
 import '../category_provider.dart';
 import '../models/category_model.dart';
 import '../models/product_model.dart';
@@ -27,6 +28,8 @@ class _CategoriesViewState extends State<CategoriesView> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Consumer<CategoryProvider>(
       builder: (context, provider, child) {
         // Show loading spinner first—const for perf
@@ -121,7 +124,7 @@ class _CategoriesViewState extends State<CategoriesView> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(12),
           boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
         ),

@@ -3,8 +3,10 @@ import 'package:ecommerce_firebase/features/dashboard/views/dashboard_view.dart'
 import 'package:ecommerce_firebase/features/filter/views/filter_view.dart';
 import 'package:ecommerce_firebase/features/profile/views/profile_view.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../features/wishlist/views/wishlist_view.dart';
+import '../theme/theme_controller.dart';
 import '../widgets/custom_bottom_bar_nav.dart';
 
 class HomeBotnav extends StatefulWidget {
@@ -35,7 +37,10 @@ class _HomeBotnavState extends State<HomeBotnav> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: IndexedStack(index: _selectedIndex, children: _widgetOptions),
       bottomNavigationBar: CustomBottomBarNav(
         currentIndex: _selectedIndex,

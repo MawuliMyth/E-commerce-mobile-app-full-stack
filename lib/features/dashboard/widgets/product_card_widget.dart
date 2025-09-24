@@ -1,12 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:auto_size_text/auto_size_text.dart';
+import '../../../theme/theme_controller.dart';
 import '../models/product_model.dart';
 import '../views/product_details_view.dart';
 
 class ProductCard extends StatefulWidget {
   final Product product;
+  final bool showCarousel; // Toggle carousel vs single image
+  final double? width; // Custom width for related products
+  final double? scaleFactor; // Responsive scaling
+  final bool showFlashSale; // Toggle flash sale price display
 
-  const ProductCard({super.key, required this.product});
+  const ProductCard({
+    super.key,
+    required this.product,
+    this.showCarousel = true,
+    this.width,
+    this.scaleFactor = 1.0,
+    this.showFlashSale = false,
+  });
 
   @override
   State<ProductCard> createState() => _ProductCardState();
@@ -23,6 +37,8 @@ class _ProductCardState extends State<ProductCard> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final scaleFactor = widget.scaleFactor ?? 1.0;
     final imageUrls = widget.product.images.isNotEmpty
         ? widget.product.images
         : [''];
@@ -35,169 +51,214 @@ class _ProductCardState extends State<ProductCard> {
           arguments: widget.product,
         );
       },
-      child: Card(
-        color: Color.fromRGBO(255, 255, 255, 1),
-        
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Product Image with PageView and indicator
-            Expanded(
-              flex: 2,
-              child: Stack(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(12),
-                      ),
-                      color: Colors.grey[200],
-                    ),
-                    child: imageUrls.length == 1 && imageUrls[0].isEmpty
-                        ? const Center(
-                            child: Icon(
-                              Icons.image_not_supported,
-                              color: Colors.grey,
-                              size: 24,
-                            ),
-                          )
-                        : PageView.builder(
-                            controller: _pageController,
-                            itemCount: imageUrls.length,
-                            itemBuilder: (context, pageIndex) {
-                              final imageUrl = imageUrls[pageIndex];
-                              return ClipRRect(
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(12),
-                                ),
-                                child: Image.network(
-                                  imageUrl,
-                                  fit: BoxFit.cover,
-                                  loadingBuilder:
-                                      (context, child, loadingProgress) {
-                                        if (loadingProgress == null)
-                                          return child;
-                                        return Center(
-                                          child: CircularProgressIndicator(
-                                            value:
-                                                loadingProgress
-                                                        .expectedTotalBytes !=
-                                                    null
-                                                ? loadingProgress
-                                                          .cumulativeBytesLoaded /
-                                                      loadingProgress
-                                                          .expectedTotalBytes!
-                                                : null,
-                                            strokeWidth: 1.5,
-                                            color: const Color(0xff004CFF),
-                                          ),
-                                        );
-                                      },
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return const Center(
-                                      child: Icon(
-                                        Icons.image_not_supported,
-                                        color: Colors.grey,
-                                        size: 24,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              );
-                            },
-                          ),
-                  ),
-                  if (imageUrls.length > 1)
-                    Positioned(
-                      bottom: 4,
-                      left: 0,
-                      right: 0,
-                      child: Center(
-                        child: SmoothPageIndicator(
-                          controller: _pageController,
-                          count: imageUrls.length,
-                          effect: const WormEffect(
-                            dotHeight: 6,
-                            dotWidth: 6,
-                            activeDotColor: Color(0xff004CFF),
-                            dotColor: Colors.grey,
-                            spacing: 3,
-                          ),
-                        ),
-                      ),
-                    ),
-                  if (imageUrls.length > 1)
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.collections,
-                              color: Colors.white,
-                              size: 10,
-                            ),
-                            const SizedBox(width: 3),
-                            Text(
-                              '${imageUrls.length}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 8,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-
-            // Product Details: Name, Price
-            Expanded(
-              flex: 1,
-              child: Padding(
-                padding: const EdgeInsets.all(5),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      child: Container(
+        width: widget.width ?? double.infinity,
+        child: Card(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12 * scaleFactor),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Product Image Section
+              Expanded(
+                flex: 2,
+                child: Stack(
                   children: [
-                    Text(
-                      widget.product.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(12 * scaleFactor),
+                        ),
+                        color: Colors.grey[200],
+                      ),
+                      child: widget.showCarousel && imageUrls.length > 1
+                          ? PageView.builder(
+                        controller: _pageController,
+                        itemCount: imageUrls.length,
+                        itemBuilder: (context, pageIndex) {
+                          final imageUrl = imageUrls[pageIndex];
+                          return ClipRRect(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(12 * scaleFactor),
+                            ),
+                            child: Image.network(
+                              imageUrl,
+                              fit: BoxFit.cover,
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress
+                                        .expectedTotalBytes !=
+                                        null
+                                        ? loadingProgress
+                                        .cumulativeBytesLoaded /
+                                        loadingProgress
+                                            .expectedTotalBytes!
+                                        : null,
+                                    strokeWidth: 1.5 * scaleFactor,
+                                    color: const Color(0xff004CFF),
+                                  ),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Center(
+                                  child: Icon(
+                                    Icons.image_not_supported,
+                                    color: Colors.grey,
+                                    size: 24 * scaleFactor,
+                                  ),
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      )
+                          : ClipRRect(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(12 * scaleFactor),
+                        ),
+                        child: Image.network(
+                          imageUrls[0],
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          loadingBuilder:
+                              (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes !=
+                                    null
+                                    ? loadingProgress
+                                    .cumulativeBytesLoaded /
+                                    loadingProgress
+                                        .expectedTotalBytes!
+                                    : null,
+                                strokeWidth: 1.5 * scaleFactor,
+                                color: const Color(0xff004CFF),
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return Center(
+                              child: Icon(
+                                Icons.image_not_supported,
+                                color: Colors.grey,
+                                size: 24 * scaleFactor,
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "\$${widget.product.price.toStringAsFixed(2)}",
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xff004CFF),
+                    if (widget.showCarousel && imageUrls.length > 1)
+                      Positioned(
+                        bottom: 4 * scaleFactor,
+                        left: 0,
+                        right: 0,
+                        child: Center(
+                          child: SmoothPageIndicator(
+                            controller: _pageController,
+                            count: imageUrls.length,
+                            effect: WormEffect(
+                              dotHeight: 6 * scaleFactor,
+                              dotWidth: 6 * scaleFactor,
+                              activeDotColor: const Color(0xff004CFF),
+                              dotColor: Colors.grey,
+                              spacing: 3 * scaleFactor,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                    if (widget.showCarousel && imageUrls.length > 1)
+                      Positioned(
+                        top: 4 * scaleFactor,
+                        right: 4 * scaleFactor,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 6 * scaleFactor,
+                            vertical: 2 * scaleFactor,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(10 * scaleFactor),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.collections,
+                                color: Colors.white,
+                                size: 10 * scaleFactor,
+                              ),
+                              SizedBox(width: 3 * scaleFactor),
+                              Text(
+                                '${imageUrls.length}',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 8 * scaleFactor,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
-            ),
-          ],
+
+              // Product Details: Name, Price
+              Expanded(
+                flex: 1,
+                child: Padding(
+                  padding: EdgeInsets.all(5 * scaleFactor),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AutoSizeText(
+                        widget.product.name,
+                        maxLines: 1,
+                        minFontSize: 10,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 15 * scaleFactor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 8 * scaleFactor),
+                      AutoSizeText(
+                        "\$${widget.product.price.toStringAsFixed(2)}",
+                        maxLines: 1,
+                        minFontSize: 8,
+                        style: TextStyle(
+                          fontSize: 17 * scaleFactor,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xff004CFF),
+                        ),
+                      ),
+                      if (widget.showFlashSale && widget.product.flashSale != null)
+                        AutoSizeText(
+                          "\$${widget.product.price.toStringAsFixed(2)}",
+                          maxLines: 1,
+                          minFontSize: 8,
+                          style: TextStyle(
+                            fontSize: 14 * scaleFactor,
+                            color: Colors.grey,
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
