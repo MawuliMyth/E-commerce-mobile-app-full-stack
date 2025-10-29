@@ -106,36 +106,36 @@ class _DashboardViewState extends State<DashboardView> {
               const SizedBox(height: 20),
 
               // Flash Sale header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Flash Sale',
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.05,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Text(
-                        'See All',
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.05,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      CircleIconButton(
-                        icon: Icons.arrow_forward,
-                        onPressed: () {
-                          // TODO: Navigate to Flash Sale screen
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //   children: [
+              //     Text(
+              //       'Flash Sale',
+              //       style: TextStyle(
+              //         fontSize: screenWidth * 0.05,
+              //         fontWeight: FontWeight.bold,
+              //       ),
+              //     ),
+              //     Row(
+              //       children: [
+              //         Text(
+              //           'See All',
+              //           style: TextStyle(
+              //             fontSize: screenWidth * 0.05,
+              //             fontWeight: FontWeight.bold,
+              //           ),
+              //         ),
+              //         const SizedBox(width: 10),
+              //         CircleIconButton(
+              //           icon: Icons.arrow_forward,
+              //           onPressed: () {
+              //             // TODO: Navigate to Flash Sale screen
+              //           },
+              //         ),
+              //       ],
+              //     ),
+              //   ],
+              // ),
             ],
           ),
         ),

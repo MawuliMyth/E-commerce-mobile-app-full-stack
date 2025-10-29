@@ -1,8 +1,11 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:auto_size_text/auto_size_text.dart';
+
 import '../../../theme/theme_controller.dart';
+import '../../auth/controllers/auth_controller.dart';
+import '../../cart/controllers/cart_provider.dart';
 import '../models/product_model.dart';
 import '../views/product_details_view.dart';
 
@@ -28,11 +31,55 @@ class ProductCard extends StatefulWidget {
 
 class _ProductCardState extends State<ProductCard> {
   final PageController _pageController = PageController();
+  bool _isAddingToCart = false;
 
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleAddToCart() async {
+    if (_isAddingToCart) return;
+
+    final authController = AuthController();
+    final token = await authController.getAccessToken();
+    print('🟡 Access token before addToCart: $token');
+
+    setState(() {
+      _isAddingToCart = true;
+    });
+
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+
+    final success = await cartProvider.addToCart(
+      productId: widget.product.id,
+      quantity: 1,
+    );
+
+    setState(() {
+      _isAddingToCart = false;
+    });
+
+    if (mounted) {
+      final snackBar = SnackBar(
+        content: Text(
+          success
+              ? 'Item added to cart successfully!'
+              : cartProvider.errorMessage ?? 'Failed to add item to cart',
+        ),
+        backgroundColor: success ? Colors.green : Colors.red,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
+      // Clear error after showing snackbar
+      if (!success) {
+        cartProvider.clearError();
+      }
+    }
   }
 
   @override
@@ -77,84 +124,88 @@ class _ProductCardState extends State<ProductCard> {
                       ),
                       child: widget.showCarousel && imageUrls.length > 1
                           ? PageView.builder(
-                        controller: _pageController,
-                        itemCount: imageUrls.length,
-                        itemBuilder: (context, pageIndex) {
-                          final imageUrl = imageUrls[pageIndex];
-                          return ClipRRect(
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(12 * scaleFactor),
-                            ),
-                            child: Image.network(
-                              imageUrl,
-                              fit: BoxFit.cover,
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    value: loadingProgress
-                                        .expectedTotalBytes !=
-                                        null
-                                        ? loadingProgress
-                                        .cumulativeBytesLoaded /
-                                        loadingProgress
-                                            .expectedTotalBytes!
-                                        : null,
-                                    strokeWidth: 1.5 * scaleFactor,
-                                    color: const Color(0xff004CFF),
+                              controller: _pageController,
+                              itemCount: imageUrls.length,
+                              itemBuilder: (context, pageIndex) {
+                                final imageUrl = imageUrls[pageIndex];
+                                return ClipRRect(
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(12 * scaleFactor),
+                                  ),
+                                  child: Image.network(
+                                    imageUrl,
+                                    fit: BoxFit.cover,
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                          if (loadingProgress == null)
+                                            return child;
+                                          return Center(
+                                            child: CircularProgressIndicator(
+                                              value:
+                                                  loadingProgress
+                                                          .expectedTotalBytes !=
+                                                      null
+                                                  ? loadingProgress
+                                                            .cumulativeBytesLoaded /
+                                                        loadingProgress
+                                                            .expectedTotalBytes!
+                                                  : null,
+                                              strokeWidth: 1.5 * scaleFactor,
+                                              color: const Color(0xff004CFF),
+                                            ),
+                                          );
+                                        },
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Center(
+                                        child: Icon(
+                                          Icons.image_not_supported,
+                                          color: Colors.grey,
+                                          size: 24 * scaleFactor,
+                                        ),
+                                      );
+                                    },
                                   ),
                                 );
                               },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Center(
-                                  child: Icon(
-                                    Icons.image_not_supported,
-                                    color: Colors.grey,
-                                    size: 24 * scaleFactor,
-                                  ),
-                                );
-                              },
-                            ),
-                          );
-                        },
-                      )
+                            )
                           : ClipRRect(
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(12 * scaleFactor),
-                        ),
-                        child: Image.network(
-                          imageUrls[0],
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          loadingBuilder:
-                              (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Center(
-                              child: CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes !=
-                                    null
-                                    ? loadingProgress
-                                    .cumulativeBytesLoaded /
-                                    loadingProgress
-                                        .expectedTotalBytes!
-                                    : null,
-                                strokeWidth: 1.5 * scaleFactor,
-                                color: const Color(0xff004CFF),
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(12 * scaleFactor),
                               ),
-                            );
-                          },
-                          errorBuilder: (context, error, stackTrace) {
-                            return Center(
-                              child: Icon(
-                                Icons.image_not_supported,
-                                color: Colors.grey,
-                                size: 24 * scaleFactor,
+                              child: Image.network(
+                                imageUrls[0],
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Center(
+                                        child: CircularProgressIndicator(
+                                          value:
+                                              loadingProgress
+                                                      .expectedTotalBytes !=
+                                                  null
+                                              ? loadingProgress
+                                                        .cumulativeBytesLoaded /
+                                                    loadingProgress
+                                                        .expectedTotalBytes!
+                                              : null,
+                                          strokeWidth: 1.5 * scaleFactor,
+                                          color: const Color(0xff004CFF),
+                                        ),
+                                      );
+                                    },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Center(
+                                    child: Icon(
+                                      Icons.image_not_supported,
+                                      color: Colors.grey,
+                                      size: 24 * scaleFactor,
+                                    ),
+                                  );
+                                },
                               ),
-                            );
-                          },
-                        ),
-                      ),
+                            ),
                     ),
                     if (widget.showCarousel && imageUrls.length > 1)
                       Positioned(
@@ -186,7 +237,9 @@ class _ProductCardState extends State<ProductCard> {
                           ),
                           decoration: BoxDecoration(
                             color: Colors.black,
-                            borderRadius: BorderRadius.circular(10 * scaleFactor),
+                            borderRadius: BorderRadius.circular(
+                              10 * scaleFactor,
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -213,46 +266,91 @@ class _ProductCardState extends State<ProductCard> {
                 ),
               ),
 
-              // Product Details: Name, Price
+              // Product Details: Name, Price, Add to Cart
               Expanded(
                 flex: 1,
                 child: Padding(
                   padding: EdgeInsets.all(5 * scaleFactor),
-                  child: Column(
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      AutoSizeText(
-                        widget.product.name,
-                        maxLines: 1,
-                        minFontSize: 10,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 15 * scaleFactor,
-                          fontWeight: FontWeight.w600,
+                      // Product name and price section
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            AutoSizeText(
+                              widget.product.name,
+                              maxLines: 1,
+                              minFontSize: 10,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 15 * scaleFactor,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(height: 8 * scaleFactor),
+                            AutoSizeText(
+                              "\$${widget.product.price.toStringAsFixed(2)}",
+                              maxLines: 1,
+                              minFontSize: 8,
+                              style: TextStyle(
+                                fontSize: 17 * scaleFactor,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xff004CFF),
+                              ),
+                            ),
+                            if (widget.showFlashSale &&
+                                widget.product.flashSale != null)
+                              AutoSizeText(
+                                "\$${widget.product.price.toStringAsFixed(2)}",
+                                maxLines: 1,
+                                minFontSize: 8,
+                                style: TextStyle(
+                                  fontSize: 14 * scaleFactor,
+                                  color: Colors.grey,
+                                  decoration: TextDecoration.lineThrough,
+                                ),
+                              ),
+                          ],
                         ),
                       ),
-                      SizedBox(height: 8 * scaleFactor),
-                      AutoSizeText(
-                        "\$${widget.product.price.toStringAsFixed(2)}",
-                        maxLines: 1,
-                        minFontSize: 8,
-                        style: TextStyle(
-                          fontSize: 17 * scaleFactor,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xff004CFF),
-                        ),
-                      ),
-                      if (widget.showFlashSale && widget.product.flashSale != null)
-                        AutoSizeText(
-                          "\$${widget.product.price.toStringAsFixed(2)}",
-                          maxLines: 1,
-                          minFontSize: 8,
-                          style: TextStyle(
-                            fontSize: 14 * scaleFactor,
-                            color: Colors.grey,
-                            decoration: TextDecoration.lineThrough,
+
+                      // Spacing
+                      SizedBox(width: 8 * scaleFactor),
+
+                      // Add to cart icon button
+                      GestureDetector(
+                        onTap: _isAddingToCart ? null : _handleAddToCart,
+                        child: Container(
+                          padding: EdgeInsets.all(8 * scaleFactor),
+                          decoration: BoxDecoration(
+                            color: _isAddingToCart
+                                ? Colors.grey
+                                : const Color(0xff004CFF),
+                            borderRadius: BorderRadius.circular(
+                              8 * scaleFactor,
+                            ),
                           ),
+                          child: _isAddingToCart
+                              ? SizedBox(
+                                  width: 20 * scaleFactor,
+                                  height: 20 * scaleFactor,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor:
+                                        const AlwaysStoppedAnimation<Color>(
+                                          Colors.white,
+                                        ),
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.add_shopping_cart,
+                                  color: Colors.white,
+                                  size: 20 * scaleFactor,
+                                ),
                         ),
+                      ),
                     ],
                   ),
                 ),

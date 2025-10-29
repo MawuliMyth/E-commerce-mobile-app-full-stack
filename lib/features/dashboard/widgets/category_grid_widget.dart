@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../theme/theme_controller.dart';
+import '../../../widgets/circle_icon_button.dart';
 import '../category_provider.dart';
 import '../models/category_model.dart';
 import '../models/product_model.dart';
@@ -29,6 +30,7 @@ class _CategoriesViewState extends State<CategoriesView> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Consumer<CategoryProvider>(
       builder: (context, provider, child) {
@@ -49,20 +51,59 @@ class _CategoriesViewState extends State<CategoriesView> {
         }
 
         return SingleChildScrollView(
-          physics:ScrollPhysics() ,
-          child: GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: 0.75,
-            ),
-            itemCount: categories.length,
-            itemBuilder: (context, index) {
-              return buildCategoryCard(categories[index]);
-            },
+          physics: BouncingScrollPhysics(),
+          child: Column(
+            children: [
+              // Categories Grid
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 0.75,
+                ),
+                itemCount: categories.length,
+                itemBuilder: (context, index) {
+                  return buildCategoryCard(categories[index]);
+                },
+              ),
+
+              const SizedBox(height: 20),
+
+              // Flash Sale header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Flash Sale',
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.05,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Text(
+                        'See All',
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.05,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      CircleIconButton(
+                        icon: Icons.arrow_forward,
+                        onPressed: () {
+                          // TODO: Navigate to Flash Sale screen
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
           ),
         );
       },
@@ -115,7 +156,7 @@ class _CategoriesViewState extends State<CategoriesView> {
         // Navigate to category products view
         Navigator.pushNamed(
           context,
-          subcategoryProductsView.id, // You'll need to define this route
+          subcategoryProductsView.id,
           arguments: {
             'category': category,
             'products': _getAllProductsInCategory(category),

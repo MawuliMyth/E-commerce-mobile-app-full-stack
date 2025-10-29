@@ -15,6 +15,7 @@ import 'features/auth/controllers/forgot_password_controller.dart';
 import 'features/auth/provider/auth_provider.dart';
 import 'features/auth/views/login_view.dart';
 import 'features/auth/views/register_view.dart';
+import 'features/cart/controllers/cart_provider.dart';
 import 'features/dashboard/category_provider.dart';
 import 'features/dashboard/models/product_model.dart';
 import 'features/dashboard/views/category_products_view.dart';
@@ -43,6 +44,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
+        ChangeNotifierProvider(create: (_) => CartProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
@@ -50,7 +52,8 @@ class MyApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
-            themeMode: themeProvider.themeMode, // <-- Use the provider's current themeMode
+            themeMode: themeProvider
+                .themeMode, // <-- Use the provider's current themeMode
             initialRoute: WelcomeScreen.id,
             routes: {
               WelcomeScreen.id: (context) => const WelcomeScreen(),
@@ -66,10 +69,11 @@ class MyApp extends StatelessWidget {
               CategoriesScreen.id: (context) => const CategoriesScreen(),
               SearchView.id: (context) => const SearchView(),
               subcategoryProductsView.id: (context) =>
-              const subcategoryProductsView(),
+                  const subcategoryProductsView(),
               CategoryProductsScreen.id: (context) {
                 final args =
-                ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+                    ModalRoute.of(context)!.settings.arguments
+                        as Map<String, dynamic>?;
                 if (args == null ||
                     !args.containsKey('categoryId') ||
                     !args.containsKey('categoryName')) {

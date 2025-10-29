@@ -1,21 +1,31 @@
+import 'dart:convert';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
+
 import '../models/auth_model.dart';
 
 class AuthController {
   final FlutterSecureStorage _storage = FlutterSecureStorage();
-  final String _refreshTokenUrl = 'https://online-store-api-ashy.vercel.app/api/users/refresh-token';
+  final String _refreshTokenUrl =
+      'https://online-store-api-ashy.vercel.app/api/users/refresh-token';
 
   Future<void> storeTokens(String accessToken, String refreshToken) async {
-    print('AuthController: Storing tokens - accessToken=$accessToken, refreshToken=$refreshToken');
+    print(
+      'AuthController: Storing tokens - accessToken=$accessToken, refreshToken=$refreshToken',
+    );
     await _storage.write(key: 'accessToken', value: accessToken);
     await _storage.write(key: 'refreshToken', value: refreshToken);
   }
 
   Future<void> storeUserData(AuthModel authModel) async {
-    print('AuthController: Storing user data - fullname=${authModel.fullname}, userId=${authModel.userId}');
-    await _storage.write(key: 'userData', value: jsonEncode(authModel.toJson()));
+    print(
+      'AuthController: Storing user data - fullname=${authModel.fullname}, userId=${authModel.userId}',
+    );
+    await _storage.write(
+      key: 'userData',
+      value: jsonEncode(authModel.toJson()),
+    );
   }
 
   Future<AuthModel?> getUserData() async {
@@ -24,7 +34,9 @@ class AuthController {
       try {
         final userData = jsonDecode(userDataJson);
         final authModel = AuthModel.fromJson(userData);
-        print('AuthController: Retrieved user data - fullname=${authModel.fullname}, userId=${authModel.userId}');
+        print(
+          'AuthController: Retrieved user data - fullname=${authModel.fullname}, userId=${authModel.userId}',
+        );
         return authModel;
       } catch (e) {
         print('AuthController: Error parsing user data = $e');
@@ -50,7 +62,8 @@ class AuthController {
   Future<bool> isAuthenticated() async {
     final accessToken = await getAccessToken();
     final userData = await getUserData();
-    bool isAuthenticated = accessToken != null && accessToken.isNotEmpty && userData != null;
+    bool isAuthenticated =
+        accessToken != null && accessToken.isNotEmpty && userData != null;
     print('AuthController: isAuthenticated=$isAuthenticated');
     return isAuthenticated;
   }
@@ -59,9 +72,14 @@ class AuthController {
     try {
       final refreshToken = await getRefreshToken();
       if (refreshToken == null || refreshToken.isEmpty) {
-        print('AuthController: No refresh token available');
+        print('❌ AuthController: No refresh token available');
         return false;
       }
+
+      print('🔄 AuthController: Attempting to refresh token...');
+      print(
+        '🔑 Refresh Token (first 20 chars): ${refreshToken.substring(0, refreshToken.length > 20 ? 20 : refreshToken.length)}...',
+      );
 
       final response = await http.post(
         Uri.parse(_refreshTokenUrl),
@@ -69,21 +87,49 @@ class AuthController {
         body: jsonEncode({'refreshToken': refreshToken}),
       );
 
-      print('AuthController: Refresh token API Response = ${response.body}, statusCode=${response.statusCode}');
+      print(
+        '📡 AuthController: Refresh Response StatusCode=${response.statusCode}',
+      );
+      print('📡 AuthController: Refresh Response Body=${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final newAccessToken = data['tokens']['accessToken'];
-        final newRefreshToken = data['tokens']['refreshToken'];
+
+        // Check what structure we received
+        print('📦 Response keys: ${data.keys.toList()}');
+        print('📦 Full response data: $data');
+
+        // Extract tokens - your backend returns them at root level
+        final newAccessToken = data['accessToken'];
+        final newRefreshToken = data['refreshToken'];
+
+        print('🔍 newAccessToken present: ${newAccessToken != null}');
+        print('🔍 newRefreshToken present: ${newRefreshToken != null}');
+
+        if (newAccessToken == null || newRefreshToken == null) {
+          print('❌ AuthController: Missing tokens in response');
+          print('   accessToken: $newAccessToken');
+          print('   refreshToken: $newRefreshToken');
+          return false;
+        }
+
+        print(
+          '✅ New AccessToken (first 20 chars): ${newAccessToken.toString().substring(0, newAccessToken.toString().length > 20 ? 20 : newAccessToken.toString().length)}...',
+        );
+
         await storeTokens(newAccessToken, newRefreshToken);
-        print('AuthController: Tokens refreshed successfully');
+        print('✅ AuthController: Tokens refreshed and stored successfully');
         return true;
       } else {
-        print('AuthController: Failed to refresh token, statusCode=${response.statusCode}, response=${response.body}');
+        print(
+          '❌ AuthController: Refresh failed with status ${response.statusCode}',
+        );
+        print('   Response: ${response.body}');
         return false;
       }
-    } catch (e) {
-      print('AuthController: Error refreshing token = $e');
+    } catch (e, stackTrace) {
+      print('❌ AuthController: Error refreshing token = $e');
+      print('❌ Stack trace: $stackTrace');
       return false;
     }
   }
@@ -93,5 +139,89 @@ class AuthController {
     await _storage.delete(key: 'accessToken');
     await _storage.delete(key: 'refreshToken');
     await _storage.delete(key: 'userData');
+  }
+
+  Future<http.Response> authenticatedRequest(
+    Uri url, {
+    String method = 'GET',
+    Map<String, String>? headers,
+    dynamic body,
+  }) async {
+    String? accessToken = await getAccessToken();
+
+    headers ??= {'Content-Type': 'application/json'};
+    headers['Authorization'] = 'Bearer $accessToken';
+
+    http.Response response;
+
+    try {
+      // 🔹 1️⃣ Attempt request
+      switch (method.toUpperCase()) {
+        case 'POST':
+          response = await http.post(
+            url,
+            headers: headers,
+            body: jsonEncode(body),
+          );
+          break;
+        case 'PUT':
+          response = await http.put(
+            url,
+            headers: headers,
+            body: jsonEncode(body),
+          );
+          break;
+        case 'DELETE':
+          response = await http.delete(url, headers: headers);
+          break;
+        default:
+          response = await http.get(url, headers: headers);
+      }
+
+      // 🔹 2️⃣ Check for token expiry
+      if (response.statusCode == 401) {
+        print('AuthController: Access token expired — refreshing...');
+
+        bool refreshed = await refreshAccessToken();
+
+        if (refreshed) {
+          // Retry once with the new token
+          accessToken = await getAccessToken();
+          headers['Authorization'] = 'Bearer $accessToken';
+
+          switch (method.toUpperCase()) {
+            case 'POST':
+              response = await http.post(
+                url,
+                headers: headers,
+                body: jsonEncode(body),
+              );
+              break;
+            case 'PUT':
+              response = await http.put(
+                url,
+                headers: headers,
+                body: jsonEncode(body),
+              );
+              break;
+            case 'DELETE':
+              response = await http.delete(url, headers: headers);
+              break;
+            default:
+              response = await http.get(url, headers: headers);
+          }
+
+          print('AuthController: Retried request after refreshing token.');
+        } else {
+          print('AuthController: Token refresh failed — forcing logout.');
+          await clearTokens();
+        }
+      }
+
+      return response;
+    } catch (e) {
+      print('AuthController: Error during authenticated request = $e');
+      rethrow;
+    }
   }
 }
