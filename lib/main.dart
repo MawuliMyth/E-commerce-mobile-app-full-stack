@@ -23,6 +23,7 @@ import 'features/dashboard/views/product_details_view.dart';
 import 'features/dashboard/views/search_view.dart';
 import 'features/dashboard/views/subcategory_products_view.dart';
 import 'features/profile/views/profile_view.dart';
+import 'features/wishlist/controllers/wishlist_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,14 +48,14 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
-
+        ChangeNotifierProvider(create: (_) => WishlistProvider()),
         // ✅ CartProvider depends on AuthProvider
         ChangeNotifierProxyProvider<AuthProvider, CartProvider>(
           create: (context) => CartProvider(
             authProvider: Provider.of<AuthProvider>(context, listen: false),
           ),
           update: (context, authProvider, previous) =>
-          previous ?? CartProvider(authProvider: authProvider),
+              previous ?? CartProvider(authProvider: authProvider),
         ),
       ],
       child: Consumer<ThemeProvider>(
@@ -80,11 +81,11 @@ class MyApp extends StatelessWidget {
               CategoriesScreen.id: (context) => const CategoriesScreen(),
               SearchView.id: (context) => const SearchView(),
               subcategoryProductsView.id: (context) =>
-              const subcategoryProductsView(),
+                  const subcategoryProductsView(),
               CategoryProductsScreen.id: (context) {
                 final args =
-                ModalRoute.of(context)!.settings.arguments
-                as Map<String, dynamic>?;
+                    ModalRoute.of(context)!.settings.arguments
+                        as Map<String, dynamic>?;
                 if (args == null ||
                     !args.containsKey('categoryId') ||
                     !args.containsKey('categoryName')) {

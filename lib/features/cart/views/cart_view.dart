@@ -449,14 +449,9 @@ class _CartViewState extends State<CartView> {
       appBar: AppBar(
         title: const Text(
           'My Cart',
-          style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        elevation: 0,
         actions: [
           Consumer<CartProvider>(
             builder: (context, cartProvider, child) {

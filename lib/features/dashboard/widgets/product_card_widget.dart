@@ -6,15 +6,16 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../../theme/theme_controller.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../cart/controllers/cart_provider.dart';
+import '../../wishlist/controllers/wishlist_provider.dart';
 import '../models/product_model.dart';
 import '../views/product_details_view.dart';
 
 class ProductCard extends StatefulWidget {
   final Product product;
-  final bool showCarousel; // Toggle carousel vs single image
-  final double? width; // Custom width for related products
-  final double? scaleFactor; // Responsive scaling
-  final bool showFlashSale; // Toggle flash sale price display
+  final bool showCarousel;
+  final double? width;
+  final double? scaleFactor;
+  final bool showFlashSale;
 
   const ProductCard({
     super.key,
@@ -44,7 +45,6 @@ class _ProductCardState extends State<ProductCard> {
 
     final authController = AuthController();
     final token = await authController.getAccessToken();
-    print('🟡 Access token before addToCart: $token');
 
     setState(() {
       _isAddingToCart = true;
@@ -75,23 +75,48 @@ class _ProductCardState extends State<ProductCard> {
 
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
 
-      // Clear error after showing snackbar
       if (!success) {
         cartProvider.clearError();
       }
     }
   }
 
+  void _handleToggleWishlist() {
+    final wishlistProvider = Provider.of<WishlistProvider>(
+      context,
+      listen: false,
+    );
+    wishlistProvider.toggleWishlist(widget.product);
+
+    final isInWishlist = wishlistProvider.isInWishlist(widget.product.id);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isInWishlist ? 'Added to wishlist!' : 'Removed from wishlist',
+        ),
+        backgroundColor: isInWishlist ? Colors.green : Colors.orange,
+        duration: const Duration(seconds: 1),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final wishlistProvider = Provider.of<WishlistProvider>(context);
     final scaleFactor = widget.scaleFactor ?? 1.0;
     final imageUrls = widget.product.images.isNotEmpty
         ? widget.product.images
         : [''];
 
+    final isInWishlist = wishlistProvider.isInWishlist(widget.product.id);
+
     return GestureDetector(
       onTap: () {
+        // Add product to recently viewed before navigating
+        wishlistProvider.addToRecentlyViewed(widget.product);
         Navigator.pushNamed(
           context,
           ProductDetailsScreen.id,
@@ -207,6 +232,37 @@ class _ProductCardState extends State<ProductCard> {
                               ),
                             ),
                     ),
+
+                    // FAVORITE ICON - NEW
+                    Positioned(
+                      top: 8 * scaleFactor,
+                      left: 8 * scaleFactor,
+                      child: GestureDetector(
+                        onTap: _handleToggleWishlist,
+                        child: Container(
+                          padding: EdgeInsets.all(8 * scaleFactor),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            isInWishlist
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            color: isInWishlist ? Colors.red : Colors.grey,
+                            size: 20 * scaleFactor,
+                          ),
+                        ),
+                      ),
+                    ),
+
                     if (widget.showCarousel && imageUrls.length > 1)
                       Positioned(
                         bottom: 4 * scaleFactor,
@@ -266,7 +322,7 @@ class _ProductCardState extends State<ProductCard> {
                 ),
               ),
 
-              // Product Details: Name, Price, Add to Cart
+              // Product Details
               Expanded(
                 flex: 1,
                 child: Padding(
@@ -274,7 +330,6 @@ class _ProductCardState extends State<ProductCard> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Product name and price section
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -315,11 +370,7 @@ class _ProductCardState extends State<ProductCard> {
                           ],
                         ),
                       ),
-
-                      // Spacing
                       SizedBox(width: 8 * scaleFactor),
-
-                      // Add to cart icon button
                       GestureDetector(
                         onTap: _isAddingToCart ? null : _handleAddToCart,
                         child: Container(
@@ -336,12 +387,11 @@ class _ProductCardState extends State<ProductCard> {
                               ? SizedBox(
                                   width: 20 * scaleFactor,
                                   height: 20 * scaleFactor,
-                                  child: CircularProgressIndicator(
+                                  child: const CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    valueColor:
-                                        const AlwaysStoppedAnimation<Color>(
-                                          Colors.white,
-                                        ),
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
                                   ),
                                 )
                               : Icon(

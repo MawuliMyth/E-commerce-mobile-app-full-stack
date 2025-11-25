@@ -4,9 +4,11 @@ class AppTheme {
   static final ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
     primarySwatch: Colors.blue,
+    hintColor: Colors.black,
+    // cardColor: Colors.grey[100],
     scaffoldBackgroundColor: Color.fromRGBO(255, 255, 255, 1),
     appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.blue,
+      backgroundColor: Color.fromRGBO(255, 255, 255, 1),
       foregroundColor: Colors.white,
     ),
     useMaterial3: true,
@@ -15,6 +17,7 @@ class AppTheme {
   static final ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
     primarySwatch: Colors.blue,
+    hintColor: Colors.white,
     scaffoldBackgroundColor: Colors.black,
     appBarTheme: const AppBarTheme(
       backgroundColor: Colors.black,
