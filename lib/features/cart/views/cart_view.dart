@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../theme/theme_controller.dart';
 import '../controllers/cart_provider.dart';
 import '../models/cart_model.dart';
 
@@ -166,7 +167,7 @@ class _CartViewState extends State<CartView> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '₦${item.price.toStringAsFixed(2)}',
+                        '\$${item.price.toStringAsFixed(2)}',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -242,7 +243,7 @@ class _CartViewState extends State<CartView> {
                           ),
                           const Spacer(),
                           Text(
-                            '₦${item.totalPrice.toStringAsFixed(2)}',
+                            '\$${item.totalPrice.toStringAsFixed(2)}',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -443,11 +444,15 @@ class _CartViewState extends State<CartView> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           'My Cart',
-          style: TextStyle(fontWeight: FontWeight.w600),
+          style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600
+          ),
         ),
         centerTitle: true,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,

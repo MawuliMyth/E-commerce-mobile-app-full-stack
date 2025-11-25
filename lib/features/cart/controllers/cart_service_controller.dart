@@ -3,11 +3,17 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
 import '../../auth/controllers/auth_controller.dart';
+import '../../auth/provider/auth_provider.dart';
 
 class CartService {
   static const String baseUrl = 'https://online-store-api-ashy.vercel.app/api';
 
   final AuthController _authController = AuthController();
+  final AuthProvider _authProvider; // ✅ Store the provider instance
+
+  // ✅ Require AuthProvider in constructor
+  CartService({required AuthProvider authProvider})
+    : _authProvider = authProvider;
 
   Map<String, dynamic> _createResponse({
     required bool success,
@@ -52,7 +58,12 @@ class CartService {
         );
       }
     } catch (e) {
-      if (kDebugMode) print('❌ CartService: Error: $e');
+      if (e.toString().contains("TOKEN_EXPIRED")) {
+        // ✅ Use the passed-in provider instance
+        if (kDebugMode) print('🚪 Token expired, forcing logout...');
+        _authProvider.forceLogout();
+      }
+
       return _createResponse(success: false, message: e.toString());
     }
   }

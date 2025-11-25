@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
 
+import '../../auth/provider/auth_provider.dart';
 import '../models/cart_model.dart';
 import 'cart_service_controller.dart';
 
 class CartProvider extends ChangeNotifier {
-  final CartService _cartService = CartService();
+  late final CartService _cartService;
+  final AuthProvider _authProvider;
 
   List<CartItem> _cartItems = [];
   bool _isLoading = false;
@@ -17,6 +19,12 @@ class CartProvider extends ChangeNotifier {
   bool get isAddingToCart => _isAddingToCart;
   String? get errorMessage => _errorMessage;
   int get cartItemCount => _cartItemCount;
+
+  // ✅ Require AuthProvider in constructor
+  CartProvider({required AuthProvider authProvider})
+    : _authProvider = authProvider {
+    _cartService = CartService(authProvider: authProvider);
+  }
 
   // ✅ Calculate total cart price
   double get totalPrice {

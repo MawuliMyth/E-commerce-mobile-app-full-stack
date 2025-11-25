@@ -147,81 +147,61 @@ class AuthController {
     Map<String, String>? headers,
     dynamic body,
   }) async {
-    String? accessToken = await getAccessToken();
+    headers ??= {};
+    headers['Content-Type'] = 'application/json';
 
-    headers ??= {'Content-Type': 'application/json'};
-    headers['Authorization'] = 'Bearer $accessToken';
+    final accessToken = await getAccessToken();
+    if (accessToken != null && accessToken.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $accessToken';
+    }
 
-    http.Response response;
+    print('🔐 Making $method request to ${url.path}');
+    print(
+      '🔑 Using token: ${accessToken?.substring(0, accessToken.length > 20 ? 20 : accessToken.length)}...',
+    );
 
-    try {
-      // 🔹 1️⃣ Attempt request
-      switch (method.toUpperCase()) {
-        case 'POST':
-          response = await http.post(
-            url,
-            headers: headers,
-            body: jsonEncode(body),
-          );
-          break;
-        case 'PUT':
-          response = await http.put(
-            url,
-            headers: headers,
-            body: jsonEncode(body),
-          );
-          break;
-        case 'DELETE':
-          response = await http.delete(url, headers: headers);
-          break;
-        default:
-          response = await http.get(url, headers: headers);
+    http.Response response = await _sendRequest(url, method, headers, body);
+
+    print('📡 Response status: ${response.statusCode}');
+
+    // ✅ Handle both 401 AND 403 for expired tokens
+    if (response.statusCode == 401 || response.statusCode == 403) {
+      print('🔄 Access token expired (${response.statusCode}) → refreshing...');
+
+      final refreshed = await refreshAccessToken();
+      if (!refreshed) {
+        print('❌ Refresh failed → user must logout.');
+        await clearTokens();
+        throw Exception("TOKEN_EXPIRED");
       }
 
-      // 🔹 2️⃣ Check for token expiry
-      if (response.statusCode == 401) {
-        print('AuthController: Access token expired — refreshing...');
+      // Retry with new token
+      final newAccessToken = await getAccessToken();
+      headers['Authorization'] = 'Bearer $newAccessToken';
+      print('🔄 Retrying request with new token...');
+      response = await _sendRequest(url, method, headers, body);
+      print('📡 Retry response status: ${response.statusCode}');
+    }
 
-        bool refreshed = await refreshAccessToken();
+    return response;
+  }
 
-        if (refreshed) {
-          // Retry once with the new token
-          accessToken = await getAccessToken();
-          headers['Authorization'] = 'Bearer $accessToken';
-
-          switch (method.toUpperCase()) {
-            case 'POST':
-              response = await http.post(
-                url,
-                headers: headers,
-                body: jsonEncode(body),
-              );
-              break;
-            case 'PUT':
-              response = await http.put(
-                url,
-                headers: headers,
-                body: jsonEncode(body),
-              );
-              break;
-            case 'DELETE':
-              response = await http.delete(url, headers: headers);
-              break;
-            default:
-              response = await http.get(url, headers: headers);
-          }
-
-          print('AuthController: Retried request after refreshing token.');
-        } else {
-          print('AuthController: Token refresh failed — forcing logout.');
-          await clearTokens();
-        }
-      }
-
-      return response;
-    } catch (e) {
-      print('AuthController: Error during authenticated request = $e');
-      rethrow;
+  // INTERNAL REQUEST SENDER ---------------------------------------------------
+  Future<http.Response> _sendRequest(
+    Uri url,
+    String method,
+    Map<String, String> headers,
+    dynamic body,
+  ) async {
+    switch (method.toUpperCase()) {
+      case 'POST':
+        return http.post(url, headers: headers, body: jsonEncode(body));
+      case 'PUT':
+        return http.put(url, headers: headers, body: jsonEncode(body));
+      case 'DELETE':
+        return http.delete(url, headers: headers);
+      default:
+        return http.get(url, headers: headers);
     }
   }
 }

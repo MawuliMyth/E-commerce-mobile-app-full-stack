@@ -34,6 +34,8 @@ void main() async {
   runApp(const MyApp());
 }
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -41,19 +43,28 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        // ✅ ONLY ONE AuthProvider
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
-        ChangeNotifierProvider(create: (_) => CartProvider()),
+
+        // ✅ CartProvider depends on AuthProvider
+        ChangeNotifierProxyProvider<AuthProvider, CartProvider>(
+          create: (context) => CartProvider(
+            authProvider: Provider.of<AuthProvider>(context, listen: false),
+          ),
+          update: (context, authProvider, previous) =>
+          previous ?? CartProvider(authProvider: authProvider),
+        ),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
           return MaterialApp(
+            navigatorKey: navigatorKey,
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
-            themeMode: themeProvider
-                .themeMode, // <-- Use the provider's current themeMode
+            themeMode: themeProvider.themeMode,
             initialRoute: WelcomeScreen.id,
             routes: {
               WelcomeScreen.id: (context) => const WelcomeScreen(),
@@ -69,11 +80,11 @@ class MyApp extends StatelessWidget {
               CategoriesScreen.id: (context) => const CategoriesScreen(),
               SearchView.id: (context) => const SearchView(),
               subcategoryProductsView.id: (context) =>
-                  const subcategoryProductsView(),
+              const subcategoryProductsView(),
               CategoryProductsScreen.id: (context) {
                 final args =
-                    ModalRoute.of(context)!.settings.arguments
-                        as Map<String, dynamic>?;
+                ModalRoute.of(context)!.settings.arguments
+                as Map<String, dynamic>?;
                 if (args == null ||
                     !args.containsKey('categoryId') ||
                     !args.containsKey('categoryName')) {

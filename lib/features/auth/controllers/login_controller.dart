@@ -66,13 +66,6 @@ class LoginController {
           token: accessToken,
         );
 
-        await AuthUtils.handleSuccessfulLogin(
-          context: context,
-          accessToken: accessToken,
-          refreshToken: refreshToken,
-          user: authModel,
-        );
-
         print(
           'LoginController: Storing tokens and user data - fullname=${authModel.fullname}, accessToken=$accessToken',
         );
@@ -82,27 +75,42 @@ class LoginController {
         print(
           'LoginController: Updating AuthProvider with fullname=${authModel.fullname}, userId=${authModel.userId}',
         );
-        Provider.of<AuthProvider>(context, listen: false).setUser(authModel);
+
+        if (context.mounted) {
+          Provider.of<AuthProvider>(context, listen: false).setUser(authModel);
+        }
+
+        await AuthUtils.handleSuccessfulLogin(
+          context: context,
+          accessToken: accessToken,
+          refreshToken: refreshToken,
+          user: authModel,
+        );
 
         onSuccess?.call();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Successfully signed in!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Successfully signed in!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
       } else {
         final errorData = jsonDecode(response.body);
         throw Exception(errorData['message'] ?? 'Login failed');
       }
     } catch (e) {
       print('LoginController: Error = $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Login failed: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Login failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -115,15 +123,31 @@ class LoginController {
   }) async {
     setLoading(true);
     try {
+      print('🔵 Step 1: Starting Google Sign-In...');
+
       // Step 1: Sign in with Google
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
+        print('❌ Google Sign-In cancelled by user');
         setLoading(false);
         return;
       }
 
+      print('✅ Google user signed in: ${googleUser.email}');
+      print('🔵 Step 2: Getting Google authentication...');
+
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
+
+      print('✅ Got Google Auth tokens');
+      print('   - accessToken present: ${googleAuth.accessToken != null}');
+      print('   - idToken present: ${googleAuth.idToken != null}');
+
+      if (googleAuth.idToken == null) {
+        throw Exception('Failed to get Google ID token');
+      }
+
+      print('🔵 Step 3: Authenticating with Firebase...');
 
       // Step 2: Authenticate with Firebase
       final credential = GoogleAuthProvider.credential(
@@ -139,30 +163,58 @@ class LoginController {
         throw Exception('Google user authentication failed');
       }
 
-      // Step 3: Send Google token & user data to your backend for JWT exchange
+      print('✅ Firebase authentication successful');
+      print('   - User UID: ${user.uid}');
+      print('   - User Email: ${user.email}');
+
+      print('🔵 Step 4: Sending to backend...');
+
+      // FIXED: Get Firebase token - this is what backend expects
+      final String? firebaseIdToken = await user.getIdToken();
+
+      if (firebaseIdToken == null || firebaseIdToken.isEmpty) {
+        throw Exception('Failed to get Firebase ID token');
+      }
+
+      print('✅ Got Firebase token:');
+      print(
+        '   - Token (first 50 chars): ${firebaseIdToken.substring(0, firebaseIdToken.length > 50 ? 50 : firebaseIdToken.length)}...',
+      );
+
+      // Step 4: Send to backend - SIMPLIFIED payload
       final backendUrl = Uri.parse(
         'https://online-store-api-ashy.vercel.app/api/users/google-auth',
       );
-      final response = await http.post(
-        backendUrl,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'idToken': googleAuth.idToken,
-          'userData': {
-            'uid': user.uid,
-            'email': user.email,
-            'displayName': user.displayName,
-            'phoneNumber': user.phoneNumber,
-            'photoURL': user.photoURL,
-          },
-        }),
-      );
 
-      print(
-        'Google Sign-In Backend Response: ${response.body}, statusCode=${response.statusCode}',
-      );
+      final requestBody = {
+        'idToken': firebaseIdToken, // Send Firebase token
+        'email': user.email,
+        'name': user.displayName,
+      };
 
-      if (response.statusCode != 200) {
+      print('📤 Sending request to backend:');
+      print('   - URL: $backendUrl');
+      print('   - Email: ${user.email}');
+      print('   - Name: ${user.displayName}');
+
+      final response = await http
+          .post(
+            backendUrl,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(requestBody),
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              throw Exception('Backend request timed out after 30 seconds');
+            },
+          );
+
+      print('📥 Backend Response:');
+      print('   - Status Code: ${response.statusCode}');
+      print('   - Body: ${response.body}');
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
         final errorData = jsonDecode(response.body);
         throw Exception(
           errorData['message'] ?? 'Google authentication failed on backend',
@@ -170,11 +222,30 @@ class LoginController {
       }
 
       final data = jsonDecode(response.body);
-      final accessToken = data['tokens']['accessToken'];
-      final refreshToken = data['tokens']['refreshToken'];
-      final userData = data['data'];
 
-      // Step 4: Store your backend-issued JWTs
+      print('🔍 Parsing backend response...');
+      print('   - Response keys: ${data.keys.toList()}');
+
+      // Handle different response structures
+      final accessToken = data['tokens']?['accessToken'] ?? data['accessToken'];
+      final refreshToken =
+          data['tokens']?['refreshToken'] ?? data['refreshToken'];
+      final userData = data['data'] ?? data['user'];
+
+      if (accessToken == null || refreshToken == null) {
+        print('❌ Missing tokens in response');
+        print('   - Full response: $data');
+        throw Exception('Missing tokens in backend response');
+      }
+
+      print('✅ Got tokens from backend');
+      print(
+        '   - accessToken (first 20 chars): ${accessToken.toString().substring(0, accessToken.toString().length > 20 ? 20 : accessToken.toString().length)}...',
+      );
+
+      print('🔵 Step 5: Storing tokens and user data...');
+
+      // Step 5: Store your backend-issued JWTs
       await _authController.storeTokens(accessToken, refreshToken);
 
       final authModel = AuthModel(
@@ -182,9 +253,21 @@ class LoginController {
         email: userData['email'] ?? user.email ?? '',
         password: '',
         phone: userData['phone'] ?? user.phoneNumber ?? '',
-        userId: userData['_id'] ?? user.uid,
+        userId: userData['_id'] ?? userData['id'] ?? user.uid,
         token: accessToken,
       );
+
+      await _authController.storeUserData(authModel);
+
+      print('✅ Tokens and user data stored');
+      print('🔵 Step 6: Updating AuthProvider...');
+
+      if (context.mounted) {
+        Provider.of<AuthProvider>(context, listen: false).setUser(authModel);
+      }
+
+      print('✅ AuthProvider updated');
+      print('🔵 Step 7: Handling successful login...');
 
       await AuthUtils.handleSuccessfulLogin(
         context: context,
@@ -193,21 +276,31 @@ class LoginController {
         user: authModel,
       );
 
+      print('✅ Google Sign-In completed successfully!');
+
       onSuccess?.call();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Successfully signed in with Google!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } catch (e) {
-      print('LoginController: Google Sign-In Error = $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Google sign-in failed: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Successfully signed in with Google!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e, stackTrace) {
+      print('❌ LoginController: Google Sign-In Error = $e');
+      print('❌ Stack trace: $stackTrace');
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Google sign-in failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
     } finally {
       setLoading(false);
     }
